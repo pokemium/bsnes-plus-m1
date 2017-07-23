@@ -3,6 +3,7 @@ class CgramWidget : public QWidget {
 
 public:
   CgramWidget();
+  ~CgramWidget();
   void paintEvent(QPaintEvent*);
   void mousePressEvent(QMouseEvent*);
 
@@ -26,6 +27,7 @@ signals:
 
 private:
   QImage *image;
+  uint32_t *imageBuffer;
   int selected;
 
   unsigned scale;

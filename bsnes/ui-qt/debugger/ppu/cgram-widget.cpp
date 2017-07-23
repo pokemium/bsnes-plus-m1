@@ -1,12 +1,17 @@
 #include "cgram-widget.moc"
 
 CgramWidget::CgramWidget() {
-  image = new QImage(16, 16, QImage::Format_RGB32);
-  image->fill(0x000000);
+  imageBuffer = new uint32_t[16 * 16];
+  image = new QImage(reinterpret_cast<uchar*>(imageBuffer), 16, 16, QImage::Format_ARGB32, Q_NULLPTR, Q_NULLPTR);
+  image->fill(0xff000000);
 
   selected = -1;
   setScale(16);
   setPaletteBpp(0);
+}
+
+CgramWidget::~CgramWidget() {
+  delete[] imageBuffer;
 }
 
 void CgramWidget::setScale(unsigned s) {
@@ -95,15 +100,13 @@ void CgramWidget::mousePressEvent(QMouseEvent *event) {
 void CgramWidget::refresh() {
   if(SNES::cartridge.loaded() == false) {
     setSelected(-1);
-    image->fill(0x000000);
+    image->fill(0xff000000);
     update();
     return;
   }
 
-  uint32_t *buffer = (uint32_t*)image->bits();
-
   for(unsigned i = 0; i < 256; i++) {
-    buffer[i] = rgbFromCgram(i);
+    imageBuffer[i] = rgbFromCgram(i);
   }
 
   update();
@@ -121,5 +124,6 @@ uint32_t rgbFromCgram(unsigned i) {
   g = (g << 3) | (g >> 2);
   b = (b << 3) | (b >> 2);
 
-  return (r << 16) | (g << 8) | (b << 0);
+  return 0xff000000 | (r << 16) | (g << 8) | (b << 0);
 }
+

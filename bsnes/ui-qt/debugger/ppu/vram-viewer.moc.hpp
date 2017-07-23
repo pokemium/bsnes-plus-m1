@@ -3,6 +3,7 @@ struct VramCanvas : public QWidget {
 
 public:
   VramCanvas();
+  ~VramCanvas();
   void paintEvent(QPaintEvent*);
   void mousePressEvent(QMouseEvent*);
 
@@ -35,6 +36,7 @@ private:
 private:
   QImage image;
   QImage scaledImage;
+  uint32_t *imageBuffer;
 
   unsigned bpp;
   unsigned zoom;

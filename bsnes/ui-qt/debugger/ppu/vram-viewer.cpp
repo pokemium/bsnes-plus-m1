@@ -186,14 +186,19 @@ void VramViewer::onCgramSelectedChanged() {
 }
 
 VramCanvas::VramCanvas() {
-  image = QImage(128, 2048, QImage::Format_RGB32);
-  image.fill(0x800000);
+  imageBuffer = new uint32_t[128 * 2048];
+  image = QImage(reinterpret_cast<uchar*>(imageBuffer), 128, 2048, QImage::Format_RGB32, Q_NULLPTR, Q_NULLPTR);
+  image.fill(0xff000000);
 
   zoom = 1;
   selectedColor = 0;
   useCgram = false;
   setDepth2bpp();
   refreshScaledImage();
+}
+
+VramCanvas::~VramCanvas() {
+  delete[] imageBuffer;
 }
 
 void VramCanvas::setDepth2bpp()  { bpp = 2; buildDefaultPalette(); updateWidgetSize(); }
@@ -222,7 +227,7 @@ void VramCanvas::buildDefaultPalette() {
   uint8_t pixel = 0;
 
   for(unsigned i = 0; i < nColors; i++) {
-    palette[i] = (pixel << 16) + (pixel << 8) + pixel;
+    palette[i] = 0xff000000 | (pixel << 16) + (pixel << 8) + pixel;
     pixel += delta;
   }
 }
@@ -256,8 +261,6 @@ void VramCanvas::refresh() {
 }
 
 void VramCanvas::refresh2bpp(const uint8_t *source) {
-  uint32_t *dest = (uint32_t*)image.bits();
-
   for(unsigned ty = 0; ty < 256; ty++) {
     for(unsigned tx = 0; tx < 16; tx++) {
       for(unsigned py = 0; py < 8; py++) {
@@ -267,7 +270,7 @@ void VramCanvas::refresh2bpp(const uint8_t *source) {
           uint8_t pixel = 0;
           pixel |= (d0 & (0x80 >> px)) ? 1 : 0;
           pixel |= (d1 & (0x80 >> px)) ? 2 : 0;
-          dest[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
+          imageBuffer[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
         }
         source += 2;
       }
@@ -276,8 +279,6 @@ void VramCanvas::refresh2bpp(const uint8_t *source) {
 }
 
 void VramCanvas::refresh4bpp(const uint8_t *source) {
-  uint32_t *dest = (uint32_t*)image.bits();
-
   for(unsigned ty = 0; ty < 128; ty++) {
     for(unsigned tx = 0; tx < 16; tx++) {
       for(unsigned py = 0; py < 8; py++) {
@@ -291,7 +292,7 @@ void VramCanvas::refresh4bpp(const uint8_t *source) {
           pixel |= (d1 & (0x80 >> px)) ? 2 : 0;
           pixel |= (d2 & (0x80 >> px)) ? 4 : 0;
           pixel |= (d3 & (0x80 >> px)) ? 8 : 0;
-          dest[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
+          imageBuffer[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
         }
         source += 2;
       }
@@ -301,8 +302,6 @@ void VramCanvas::refresh4bpp(const uint8_t *source) {
 }
 
 void VramCanvas::refresh8bpp(const uint8_t *source) {
-  uint32_t *dest = (uint32_t*)image.bits();
-
   for(unsigned ty = 0; ty < 64; ty++) {
     for(unsigned tx = 0; tx < 16; tx++) {
       for(unsigned py = 0; py < 8; py++) {
@@ -324,7 +323,7 @@ void VramCanvas::refresh8bpp(const uint8_t *source) {
           pixel |= (d5 & (0x80 >> px)) ? 0x20 : 0;
           pixel |= (d6 & (0x80 >> px)) ? 0x40 : 0;
           pixel |= (d7 & (0x80 >> px)) ? 0x80 : 0;
-          dest[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
+          imageBuffer[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
         }
         source += 2;
       }
@@ -334,14 +333,12 @@ void VramCanvas::refresh8bpp(const uint8_t *source) {
 }
 
 void VramCanvas::refreshMode7(const uint8_t *source) {
-  uint32_t *dest = (uint32_t*)image.bits();
-
   for(unsigned ty = 0; ty < 16; ty++) {
     for(unsigned tx = 0; tx < 16; tx++) {
       for(unsigned py = 0; py < 8; py++) {
         for(unsigned px = 0; px < 8; px++) {
           uint8_t pixel = source[1];
-          dest[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
+          imageBuffer[(ty * 8 + py) * 128 + (tx * 8 + px)] = palette[pixel];
           source += 2;
         }
       }
