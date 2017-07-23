@@ -202,8 +202,8 @@ MainWindow::MainWindow() {
   debugger_show = debugger_menu->addAction("Show Debugger");
   debugger_menu->addSeparator();
 
-  { QAction *debug_action = debugger_menu->addAction("Disassembler"); debug_action->setData(Debugger::MenuAction::DisassemblerWindow); }
   { QAction *debug_action = debugger_menu->addAction("Breakpoint Editor"); debug_action->setData(Debugger::MenuAction::BreakpointsWindow); }
+  { QAction *debug_action = debugger_menu->addAction("Disassembler"); debug_action->setData(Debugger::MenuAction::DisassemblerWindow); }
   { QAction *debug_action = debugger_menu->addAction("Memory Editor"); debug_action->setData(Debugger::MenuAction::MemoryWindow); }
   { QAction *debug_action = debugger_menu->addAction("Properties"); debug_action->setData(Debugger::MenuAction::PropertiesWindow); }
   debugger_menu->addSeparator();
