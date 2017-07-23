@@ -732,9 +732,9 @@ void CanvasObject::keyReleaseEvent(QKeyEvent *event) {
 QPaintEngine* CanvasWidget::paintEngine() const {
   if(SNES::cartridge.loaded()) {
     video.refresh();
-    return 0;
   }
-  return QWidget::paintEngine();
+  return 0;
+  //return QWidget::paintEngine();
 }
 
 void CanvasWidget::mouseReleaseEvent(QMouseEvent *event) {
