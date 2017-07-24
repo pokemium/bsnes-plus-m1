@@ -6,6 +6,9 @@
 #include "userinterface-emulationspeed.cpp"
 #include "userinterface-states.cpp"
 #include "userinterface-videosettings.cpp"
+#if defined(DEBUGGER)
+#include "userinterface-debugger.cpp"
+#endif
 
 void MappedInput::bind() {
   lstring part;
