@@ -85,7 +85,7 @@ QImage TilemapRenderer::drawTilemap() {
   unsigned width = mapSize * (screenSizeX + 1);
   unsigned height = mapSize * (screenSizeY + 1);
 
-  QImage image(width, height, QImage::Format_RGB32);
+  QImage image(width, height, QImage::Format_ARGB32);
 
   unsigned addr = screenAddr;
   for(unsigned y = 0; y < height; y += mapSize) {
@@ -216,7 +216,7 @@ void TilemapRenderer::draw8pxTile(uint32_t* imgBits, const unsigned wordsPerScan
 }
 
 QImage TilemapRenderer::drawMode7Tilemap() {
-  QImage image(1024, 1024, QImage::Format_RGB32);
+  QImage image(1024, 1024, QImage::Format_ARGB32);
 
   uint32_t* scanline = (uint32_t*)image.scanLine(0);
   unsigned wordsPerScanline = image.bytesPerLine() / 4;

@@ -1,17 +1,12 @@
 #include "cgram-widget.moc"
 
 CgramWidget::CgramWidget() {
-  imageBuffer = new uint32_t[16 * 16];
-  image = new QImage(reinterpret_cast<uchar*>(imageBuffer), 16, 16, QImage::Format_ARGB32, Q_NULLPTR, Q_NULLPTR);
+  image = new QImage(16, 16, QImage::Format_ARGB32);
   image->fill(0xff000000);
 
   selected = -1;
   setScale(16);
   setPaletteBpp(0);
-}
-
-CgramWidget::~CgramWidget() {
-  delete[] imageBuffer;
 }
 
 void CgramWidget::setScale(unsigned s) {
@@ -105,8 +100,10 @@ void CgramWidget::refresh() {
     return;
   }
 
+  uint32_t *buffer = (uint32_t*)image->bits();
+
   for(unsigned i = 0; i < 256; i++) {
-    imageBuffer[i] = rgbFromCgram(i);
+    buffer[i] = rgbFromCgram(i);
   }
 
   update();
