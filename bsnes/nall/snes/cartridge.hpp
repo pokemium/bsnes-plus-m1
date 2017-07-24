@@ -687,7 +687,7 @@ void SNESCartridge::read_header(const uint8_t *data, unsigned size) {
     has_srtc = true;
   }
 
-  if(mapperid == 0x20 && rom_type == 0xf3) {
+  if((mapperid == 0x20 || mapperid == 0x30) && rom_type == 0xf3) {
     has_cx4 = true;
   }
 
