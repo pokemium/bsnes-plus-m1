@@ -136,10 +136,20 @@ void Debugger::write(Debugger::MemorySource source, unsigned addr, uint8 data) {
 }
 
 void Debugger::echo(const char *message) {
-  printf("%s\n", message);
   if (echo_func) {
     echo_func(message);
+  } else {
+    printf("%s\n", message);
   }
+}
+
+void Debugger::print(const char *format, ...) {
+  char str[2048];
+  va_list args;
+  va_start(args, format);
+  vsprintf(str, format, args);
+  va_end(args);
+  echo(str);
 }
 
 Debugger::Debugger() {

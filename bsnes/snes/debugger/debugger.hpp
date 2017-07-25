@@ -45,6 +45,7 @@ public:
   void write(MemorySource, unsigned addr, uint8 data);
 
   void echo(const char *message);
+  void print(const char *format, ...);
   void (*echo_func)(const char *);
 
   Debugger();
