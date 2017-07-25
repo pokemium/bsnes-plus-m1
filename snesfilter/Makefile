@@ -14,7 +14,7 @@ ifeq ($(OSX_USE_GCC), 1)
 endif
 
 c     := $(compiler) -xc -std=gnu99
-cpp   := $(compiler) -std=gnu++0x
+cpp   := $(compiler) -std=gnu++11
 flags := -I. -Iobj $(qtinc)
 link  :=
 

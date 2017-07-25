@@ -12,7 +12,7 @@ version := v073+3a
 
 # compiler
 c       := $(compiler) -xc -std=gnu99
-cpp     := $(compiler) -std=gnu++0x
+cpp     := $(compiler) -std=gnu++11
 flags   := -I. -I$(snes)
 link    :=
 objects :=

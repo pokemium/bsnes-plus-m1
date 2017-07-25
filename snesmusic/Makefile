@@ -1,7 +1,7 @@
 include nall/Makefile
 
 c     := $(compiler) -x c -std=gnu99
-cpp   := $(compiler) -std=gnu++0x
+cpp   := $(compiler) -std=gnu++11
 flags := -I.
 link  :=
 
