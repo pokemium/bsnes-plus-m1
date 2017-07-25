@@ -43,6 +43,13 @@ public:
   void autoUpdate();
   Debugger();
 
+  static void *echo_context;
+  static void echo_forwarder(const char *message) {
+    if (echo_context) {
+      static_cast<Debugger*>(Debugger::echo_context)->echo(message);
+    }
+  }
+
   enum MenuAction {
     MainWindow = 0,
     DisassemblerWindow,

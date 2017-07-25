@@ -8,29 +8,29 @@ void Debugger::breakpoint_test(Debugger::Breakpoint::Source source, Debugger::Br
 
     if(breakpoint[i].data != -1 && breakpoint[i].data != data) continue;
     if(breakpoint[i].source != source) continue;
-    
+
     if((breakpoint[i].mode & (unsigned)mode) == 0) continue;
-    
+
     // don't account for address mirroring when using a range of addresses
     // (because the range might span multiple memory sources and it's easier to not deal with that)
     if (breakpoint[i].addr_end > 0) {
       if (addr < breakpoint[i].addr) continue;
       if (addr > breakpoint[i].addr_end) continue;
-      
+
     // account for address mirroring on the S-CPU and SA-1 (and other) buses
     } else if (source == Debugger::Breakpoint::Source::CPUBus) {
       if (!bus.is_mirror(breakpoint[i].addr, addr)) continue;
-      
+
     } else if (source == Debugger::Breakpoint::Source::SA1Bus) {
       if (!sa1bus.is_mirror(breakpoint[i].addr, addr)) continue;
-      
+
     } else if (source == Debugger::Breakpoint::Source::SFXBus) {
       if (!superfxbus.is_mirror(breakpoint[i].addr, addr)) continue;
-      
+
     } else {
       if (breakpoint[i].addr != addr) continue;
     }
-    
+
     breakpoint[i].counter++;
     breakpoint_hit = i;
     break_event = BreakEvent::BreakpointHit;
@@ -65,22 +65,22 @@ uint8 Debugger::read(Debugger::MemorySource source, unsigned addr) {
     case MemorySource::CGRAM: {
       return memory::cgram.read(addr & 0x01ff);
     } break;
-    
+
     case MemorySource::CartROM: {
       if (addr < memory::cartrom.size())
         return memory::cartrom.read(addr & 0xffffff);
     } break;
-    
+
     case MemorySource::CartRAM: {
       if (addr < memory::cartram.size())
         return memory::cartram.read(addr & 0xffffff);
     } break;
-    
+
     case MemorySource::SA1Bus: {
       if (cartridge.has_sa1())
         return sa1bus.read(addr & 0xffffff);
     } break;
-    
+
     case MemorySource::SFXBus: {
       if (cartridge.has_superfx())
         return superfxbus.read(addr & 0xffffff);
@@ -95,7 +95,7 @@ void Debugger::write(Debugger::MemorySource source, unsigned addr, uint8 data) {
     case MemorySource::CPUBus: {
       bus.write(addr & 0xffffff, data);
     } break;
-    
+
     case MemorySource::APUBus:
     case MemorySource::APURAM: {
       memory::apuram.write(addr & 0xffff, data);
@@ -113,25 +113,32 @@ void Debugger::write(Debugger::MemorySource source, unsigned addr, uint8 data) {
     case MemorySource::CGRAM: {
       memory::cgram.write(addr & 0x01ff, data);
     } break;
-    
+
     case MemorySource::CartROM: {
       if (addr < memory::cartrom.size()) {
         memory::cartrom.write(addr & 0xffffff, data);
       }
     } break;
-    
+
     case MemorySource::CartRAM: {
       if (addr < memory::cartram.size())
         memory::cartram.write(addr & 0xffffff, data);
     } break;
-    
+
     case MemorySource::SA1Bus: {
       if (cartridge.has_sa1()) sa1bus.write(addr & 0xffffff, data);
     } break;
-    
+
     case MemorySource::SFXBus: {
       if (cartridge.has_superfx()) superfxbus.write(addr & 0xffffff, data);
     } break;
+  }
+}
+
+void Debugger::echo(const char *message) {
+  printf("%s\n", message);
+  if (echo_func) {
+    echo_func(message);
   }
 }
 
@@ -154,7 +161,7 @@ Debugger::Debugger() {
   step_sfx = false;
   bus_access = false;
   break_on_wdm = false;
-  
+
   step_type = StepType::None;
 }
 

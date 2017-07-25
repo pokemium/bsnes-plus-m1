@@ -17,10 +17,10 @@ public:
     unsigned addr;
     unsigned addr_end; //0 = unused
     signed data;  //-1 = unused
-    
+
     enum class Mode : unsigned { Exec = 1, Read = 2, Write = 4 };
     unsigned mode;
-    
+
     enum class Source : unsigned { CPUBus, APURAM, VRAM, OAM, CGRAM, SA1Bus, SFXBus } source;
     unsigned counter;  //number of times breakpoint has been hit since being set
   } breakpoint[Breakpoints];
@@ -34,8 +34,8 @@ public:
   bool bus_access;
   bool break_on_wdm;
 
-  enum class StepType : unsigned { 
-    None, StepInto, StepOver, StepOut 
+  enum class StepType : unsigned {
+    None, StepInto, StepOver, StepOut
   } step_type;
   int call_count;
   bool step_over_new;
@@ -43,6 +43,9 @@ public:
   enum class MemorySource : unsigned { CPUBus, APUBus, APURAM, VRAM, OAM, CGRAM, CartROM, CartRAM, SA1Bus, SFXBus };
   uint8 read(MemorySource, unsigned addr);
   void write(MemorySource, unsigned addr, uint8 data);
+
+  void echo(const char *message);
+  void (*echo_func)(const char *);
 
   Debugger();
 };

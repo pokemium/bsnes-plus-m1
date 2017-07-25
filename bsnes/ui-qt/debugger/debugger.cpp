@@ -25,6 +25,8 @@ Debugger *debugger;
 
 #include "misc/debugger-options.cpp"
 
+void* Debugger::echo_context;
+
 Debugger::Debugger() {
   setObjectName("debugger");
   setWindowTitle("Debugger");
@@ -192,6 +194,9 @@ Debugger::Debugger() {
   connect(traceSA1, SIGNAL(stateChanged(int)), tracer, SLOT(setSa1TraceState(int)));
   connect(traceSFX, SIGNAL(stateChanged(int)), tracer, SLOT(setSfxTraceState(int)));
   connect(traceMask, SIGNAL(stateChanged(int)), tracer, SLOT(setTraceMaskState(int)));
+
+  echo_context = this;
+  SNES::debugger.echo_func = echo_forwarder;
 
   frameCounter = 0;
   synchronize();
