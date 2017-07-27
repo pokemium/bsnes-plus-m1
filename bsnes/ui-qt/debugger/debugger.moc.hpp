@@ -37,16 +37,19 @@ public:
   QCheckBox *traceMask;
   QWidget *spacer;
 
+  void paintEvent(QPaintEvent*);
+
   void modifySystemState(unsigned);
   void echo(const char *message);
   void event();
   void autoUpdate();
+
   Debugger();
 
   static void *echo_context;
   static void echo_forwarder(const char *message) {
     if (echo_context) {
-      static_cast<Debugger*>(Debugger::echo_context)->echo(message);
+      static_cast<Debugger*>(echo_context)->echo(message);
     }
   }
 
@@ -79,6 +82,7 @@ public slots:
 private:
   inline void switchWindow();
 
+  QString consoleBuffer;
   unsigned frameCounter;
 };
 

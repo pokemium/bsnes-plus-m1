@@ -66,6 +66,7 @@ Debugger::Debugger() {
   console = new QTextEdit;
   console->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   console->setReadOnly(true);
+  console->setUndoRedoEnabled(false);
   console->setFont(QFont(Style::Monospace, Style::MonospaceSize));
   console->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   console->setMinimumWidth((98 + 4) * console->fontMetrics().width(' '));
@@ -207,6 +208,14 @@ Debugger::Debugger() {
   updateTimer->start(15);
 }
 
+void Debugger::paintEvent(QPaintEvent*) {
+  if (consoleBuffer.size()) {
+    console->insertHtml(consoleBuffer);
+    console->moveCursor(QTextCursor::End);
+    consoleBuffer.clear();
+  }
+}
+
 void Debugger::modifySystemState(unsigned state) {
   string usagefile = filepath(nall::basename(cartridge.fileName), config().path.data);
   string bpfile = usagefile;
@@ -308,11 +317,11 @@ void Debugger::synchronize() {
 }
 
 void Debugger::echo(const char *message) {
-  console->moveCursor(QTextCursor::End);
-  console->insertHtml(message);
+  consoleBuffer.append(message);
 }
 
 void Debugger::clear() {
+  consoleBuffer.clear();
   console->setHtml("");
 }
 
