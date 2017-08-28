@@ -280,7 +280,7 @@ void TilemapViewer::updateTileInfoNormal() {
   text << "<tr><td>Address: </td><td>0x" << hex<4>(tileAddr) << "</td></tr>";
   text << "<tr><td>Value: </td><td>0x" << hex<4>(tile) << "</td></tr>";
   text << "<tr><td>&nbsp;</td><td>&nbsp;</td></tr>";
-  text << "<tr><td>Character: </td><td>" << character << "</td></tr>";
+  text << "<tr><td>Character: </td><td>" << hex<3>(character) << "</td></tr>";
   text << "<tr><td>Palette: </td><td>" << pal << "</td></tr>";
   text << "<tr><td>Priority: </td><td>" << (unsigned)priority << "</td></tr>";
   text << "<tr><td>hFlip: </td><td>" << (unsigned)hFlip << "</td></tr>";
