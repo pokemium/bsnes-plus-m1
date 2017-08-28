@@ -36,7 +36,7 @@ void Utility::modifySystemState(system_state_t systemState) {
       showMessage(msgString);
       mainWindow->setWindowTitle(string() << cartridge.name << " - " << SNES::Info::Name << " v" << SNES::Info::Version);
       #if defined(DEBUGGER)
-      debugger->echo(string() << "Loaded " << cartridge.name << ".<br>");
+      debugger->log(LogMessage(string() << "Loaded " << cartridge.name));
       #endif
     } break;
 

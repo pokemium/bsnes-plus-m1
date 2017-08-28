@@ -65,6 +65,7 @@ public:
   uint8_t op_readpc();
   uint8 op_read(uint32 addr);
   uint8 dma_read(uint32 abus);
+  void dma_run();
   void op_write(uint32 addr, uint8 data);
 
   uint8 disassembler_read(uint32 addr);

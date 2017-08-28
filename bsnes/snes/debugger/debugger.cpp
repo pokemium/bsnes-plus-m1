@@ -135,21 +135,21 @@ void Debugger::write(Debugger::MemorySource source, unsigned addr, uint8 data) {
   }
 }
 
-void Debugger::echo(const char *message) {
-  if (echo_func) {
-    echo_func(message);
+void Debugger::log(const char *message, const char *color) {
+  if (log_func) {
+    log_func(message, color);
   } else {
     printf("%s\n", message);
   }
 }
 
-void Debugger::print(const char *format, ...) {
-  char str[2048];
+void Debugger::logv(const char *format, const char *color, ...) {
+  char str[1024];
   va_list args;
-  va_start(args, format);
+  va_start(args, color);
   vsprintf(str, format, args);
   va_end(args);
-  echo(str);
+  log(str, color);
 }
 
 Debugger::Debugger() {

@@ -69,7 +69,7 @@ bool hdma_active_after(unsigned i);
 uint8 hdma_enabled_channels();
 uint8 hdma_active_channels();
 
-void dma_run();
+debugvirtual void dma_run();
 void hdma_update(unsigned i);
 void hdma_run();
 void hdma_init_reset();

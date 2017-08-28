@@ -24,6 +24,7 @@ public:
     enum class Source : unsigned { CPUBus, APURAM, VRAM, OAM, CGRAM, SA1Bus, SFXBus } source;
     unsigned counter;  //number of times breakpoint has been hit since being set
   } breakpoint[Breakpoints];
+
   unsigned breakpoint_hit;
   void breakpoint_test(Breakpoint::Source source, Breakpoint::Mode mode, unsigned addr, uint8 data);
 
@@ -31,6 +32,7 @@ public:
   bool step_smp;
   bool step_sa1;
   bool step_sfx;
+  bool log_dma;
   bool bus_access;
   bool break_on_wdm;
 
@@ -44,9 +46,9 @@ public:
   uint8 read(MemorySource, unsigned addr);
   void write(MemorySource, unsigned addr, uint8 data);
 
-  void echo(const char *message);
-  void print(const char *format, ...);
-  void (*echo_func)(const char *);
+  void log(const char *message, const char *color = NULL);
+  void logv(const char *format, const char *color = NULL, ...);
+  void (*log_func)(const char *, const char *color);
 
   Debugger();
 };

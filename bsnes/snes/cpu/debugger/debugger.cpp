@@ -5,8 +5,7 @@
  */
 #ifdef CPU_CPP
 
-uint8 CPUDebugger::disassembler_read(uint32 addr)
-{
+uint8 CPUDebugger::disassembler_read(uint32 addr) {
   debugger.bus_access = true;
   uint8 data = bus.read(addr);
   debugger.bus_access = false;
@@ -93,6 +92,102 @@ uint8 CPUDebugger::dma_read(uint32 abus) {
   uint8 data = CPU::dma_read(abus);
   debugger.breakpoint_test(Debugger::Breakpoint::Source::CPUBus, Debugger::Breakpoint::Mode::Read, abus, data);
   return data;
+}
+
+void CPUDebugger::dma_run() {
+  const uint32 pc = opcode_pc;
+  dma_add_clocks(8);
+  dma_write(false);
+  dma_edge();
+
+  for(unsigned i = 0; i < 8; i++) {
+    if(channel[i].dma_enabled == false) continue;
+
+    if (debugger.log_dma) {
+      uint32 addr = (channel[i].source_bank << 16) | (channel[i].source_addr);
+      const char* html_color = "#00a0a0";
+      const char* dir_fwd = "-&gt;";
+      const char* dir_bwd = "&lt;-";
+      const char* step_inc = "++";
+      const char* step_dec = "--";
+      const char* step_fix = "  ";
+
+      if (channel[i].indirect) {
+        // Indirect DMA
+        // Log more useful info when need arises
+        debugger.logv("%06x DMA%u: Length:%04x (Indirect)", html_color,
+                      pc, i, channel[i].transfer_size);
+
+      } else {
+        // Direct DMA
+        char dest_extra[64];
+        switch (channel[i].dest_addr) {
+          case 0x04:
+            sprintf(dest_extra, " (OAM:%04x)", ppu.regs.oam_addr);
+            break;
+          case 0x18:
+            sprintf(dest_extra, " (VRAM:%04x)", ppu.regs.vram_addr);
+            break;
+          case 0x22:
+            sprintf(dest_extra, " (CGRAM:%04x)", ppu.regs.cgram_addr);
+            break;
+          default:
+            strcpy(dest_extra, "");
+        }
+
+        char mode_extra[64];
+        switch (channel[i].transfer_mode) {
+          case 0x00:
+            sprintf(mode_extra, "00");
+            break;
+          case 0x01:
+            sprintf(mode_extra, "01 [21%02x,%02x]", channel[i].dest_addr, channel[i].dest_addr + 1);
+            break;
+          case 0x02:
+            sprintf(mode_extra, "02 [21%02x,%02x]", channel[i].dest_addr, channel[i].dest_addr);
+            break;
+          case 0x03:
+            sprintf(mode_extra, "03 [21%02x,%02x,%02x,%02x]", channel[i].dest_addr, channel[i].dest_addr, channel[i].dest_addr + 1, channel[i].dest_addr + 1);
+            break;
+          case 0x04:
+            sprintf(mode_extra, "04 [21%02x,%02x,%02x,%02x]", channel[i].dest_addr, channel[i].dest_addr + 1, channel[i].dest_addr + 2, channel[i].dest_addr + 3);
+            break;
+          case 0x05:
+            sprintf(mode_extra, "05 [21%02x,%02x,%02x,%02x]", channel[i].dest_addr, channel[i].dest_addr + 1, channel[i].dest_addr, channel[i].dest_addr + 1);
+            break;
+          case 0x06:
+            sprintf(mode_extra, "06 [21%02x,%02x]", channel[i].dest_addr, channel[i].dest_addr);
+            break;
+          case 0x07:
+            sprintf(mode_extra, "07 [21%02x,%02x,%02x,%02x]", channel[i].dest_addr, channel[i].dest_addr, channel[i].dest_addr + 1, channel[i].dest_addr + 1);
+            break;
+          default:
+            strcpy(mode_extra, "");
+        }
+
+        debugger.logv("%06x DMA[%u] %06x%s %s %04x%-13s C:%04x U:%s", html_color,
+                      pc, i, addr,
+                      (channel[i].fixed_transfer ? step_fix : (channel[i].reverse_transfer ? step_dec : step_inc)),
+                      (channel[i].direction ? dir_bwd : dir_fwd),
+                      (0x2100 + channel[i].dest_addr),
+                      dest_extra, channel[i].transfer_size, mode_extra);
+      }
+    }
+
+    unsigned index = 0;
+    do {
+      dma_transfer(channel[i].direction, dma_bbus(i, index++), dma_addr(i));
+      dma_edge();
+    } while(channel[i].dma_enabled && --channel[i].transfer_size);
+
+    dma_add_clocks(8);
+    dma_write(false);
+    dma_edge();
+
+    channel[i].dma_enabled = false;
+  }
+
+  status.irq_lock = true;
 }
 
 void CPUDebugger::op_write(uint32 addr, uint8 data) {

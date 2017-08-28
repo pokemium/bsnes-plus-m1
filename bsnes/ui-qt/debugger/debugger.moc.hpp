@@ -1,3 +1,25 @@
+#include <list>
+
+struct LogMessage {
+  LogMessage(){}
+  LogMessage(const string& plain_message, const string& color = "") {
+    message = string() << plain_message << "\n";
+    message.replace("\n", "<br>");
+    message.replace(" ", "&nbsp;");
+    if (color.length()) {
+      message = string() << "<font color='" << color << "'>" << message << "</font>";
+    }
+  }
+
+  string message;
+};
+
+struct HtmlLogMessage : LogMessage {
+  HtmlLogMessage(const string& html_message) {
+    message = html_message;
+  }
+};
+
 class Debugger : public Window {
   Q_OBJECT
 
@@ -18,7 +40,7 @@ public:
   QAction *menu_misc_options;
 
   QHBoxLayout *layout;
-  QTextEdit *console;
+  QPlainTextEdit *console;
   QVBoxLayout *consoleLayout;
   QVBoxLayout *controlLayout;
   QHBoxLayout *commandLayout;
@@ -35,21 +57,24 @@ public:
   QCheckBox *traceSA1;
   QCheckBox *traceSFX;
   QCheckBox *traceMask;
+  QCheckBox *logDMA;
   QWidget *spacer;
 
   void paintEvent(QPaintEvent*);
 
   void modifySystemState(unsigned);
-  void echo(const char *message);
+  void echo(const char *html_message);
+  void log(const char *plain_message, const char *color);
+  void log(const LogMessage message);
   void event();
   void autoUpdate();
 
   Debugger();
 
-  static void *echo_context;
-  static void echo_forwarder(const char *message) {
-    if (echo_context) {
-      static_cast<Debugger*>(echo_context)->echo(message);
+  static void *log_context;
+  static void log_forwarder(const char *plain_message, const char *color = NULL) {
+    if (log_context) {
+      static_cast<Debugger*>(log_context)->log(plain_message, color);
     }
   }
 
@@ -79,10 +104,12 @@ public slots:
   void stepOverAction();
   void stepOutAction();
 
+  void setLogDMAState(int);
+
 private:
   inline void switchWindow();
 
-  QString consoleBuffer;
+  std::list<LogMessage> messageBuffer;
   unsigned frameCounter;
 };
 

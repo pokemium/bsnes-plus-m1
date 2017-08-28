@@ -25,7 +25,7 @@ Debugger *debugger;
 
 #include "misc/debugger-options.cpp"
 
-void* Debugger::echo_context;
+void* Debugger::log_context;
 
 Debugger::Debugger() {
   setObjectName("debugger");
@@ -63,7 +63,7 @@ Debugger::Debugger() {
   consoleLayout->setSpacing(0);
   layout->addLayout(consoleLayout);
 
-  console = new QTextEdit;
+  console = new QPlainTextEdit;
   console->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   console->setReadOnly(true);
   console->setUndoRedoEnabled(false);
@@ -152,6 +152,11 @@ Debugger::Debugger() {
   traceMask = new QCheckBox("Enable trace mask");
   controlLayout->addWidget(traceMask);
 
+  controlLayout->addSpacing(Style::WidgetSpacing);
+
+  logDMA = new QCheckBox("Log DMA transfers");
+  controlLayout->addWidget(logDMA);
+
   spacer = new QWidget;
   spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
   controlLayout->addWidget(spacer);
@@ -195,9 +200,10 @@ Debugger::Debugger() {
   connect(traceSA1, SIGNAL(stateChanged(int)), tracer, SLOT(setSa1TraceState(int)));
   connect(traceSFX, SIGNAL(stateChanged(int)), tracer, SLOT(setSfxTraceState(int)));
   connect(traceMask, SIGNAL(stateChanged(int)), tracer, SLOT(setTraceMaskState(int)));
+  connect(logDMA, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
 
-  echo_context = this;
-  SNES::debugger.echo_func = echo_forwarder;
+  log_context = this;
+  SNES::debugger.log_func = log_forwarder;
 
   frameCounter = 0;
   synchronize();
@@ -209,10 +215,14 @@ Debugger::Debugger() {
 }
 
 void Debugger::paintEvent(QPaintEvent*) {
-  if (consoleBuffer.size()) {
-    console->insertHtml(consoleBuffer);
+  if (messageBuffer.size()) {
+    QTextCursor cursor = QTextCursor(console->document());
+    cursor.movePosition(QTextCursor::End);
+    for (LogMessage &m : messageBuffer) {
+      cursor.insertHtml(m.message);
+    }
+    messageBuffer.clear();
     console->moveCursor(QTextCursor::End);
-    consoleBuffer.clear();
   }
 }
 
@@ -316,13 +326,21 @@ void Debugger::synchronize() {
   memoryEditor->synchronize();
 }
 
-void Debugger::echo(const char *message) {
-  consoleBuffer.append(message);
+void Debugger::echo(const char *html_message) {
+  log(HtmlLogMessage(html_message));
+}
+
+void Debugger::log(const char *plain_message, const char *color) {
+  log(LogMessage(plain_message, color));
+}
+
+void Debugger::log(const LogMessage message) {
+  messageBuffer.emplace_back(message);
 }
 
 void Debugger::clear() {
-  consoleBuffer.clear();
-  console->setHtml("");
+  messageBuffer.clear();
+  console->clear();
 }
 
 void Debugger::switchWindow() {
@@ -387,6 +405,10 @@ void Debugger::stepOutAction() {
   switchWindow();
 }
 
+void Debugger::setLogDMAState(int state) {
+  SNES::debugger.log_dma = (state == Qt::Checked);
+}
+
 void Debugger::event() {
   char t[256];
 
@@ -400,11 +422,11 @@ void Debugger::event() {
       unsigned n = SNES::debugger.breakpoint_hit;
 
       if (n < SNES::Debugger::Breakpoints)
-        echo(string() << "Breakpoint " << n << " hit (" << SNES::debugger.breakpoint[n].counter << ").<br>");
+        log(LogMessage(string() << "Breakpoint " << n << " hit (" << SNES::debugger.breakpoint[n].counter << ")", "#a000a0"));
       else if (n == SNES::Debugger::SoftBreakCPU)
-        echo(string() << "Software breakpoint hit (CPU).<br>");
+        log(LogMessage("Software breakpoint hit (CPU)", "#a000a0"));
       else if (n == SNES::Debugger::SoftBreakSA1)
-        echo(string() << "Software breakpoint hit (SA-1).<br>");
+        log(LogMessage("Software breakpoint hit (SA-1)", "#a000a0"));
       else break;
 
       if(n == SNES::Debugger::SoftBreakCPU
@@ -414,9 +436,7 @@ void Debugger::event() {
            || SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::CGRAM) {
         SNES::debugger.step_cpu = true;
         SNES::cpu.disassemble_opcode(t, SNES::cpu.opcode_pc, config().debugger.showHClocks);
-        string s = t;
-        s.replace(" ", "&nbsp;");
-        echo(string() << "<font color='#a000a0'>" << s << "</font><br>");
+        log(LogMessage(t, "#a000a0"));
         disassembler->refresh(Disassembler::CPU, SNES::cpu.opcode_pc);
         registerEditCPU->setEnabled(true);
         break;
@@ -426,9 +446,7 @@ void Debugger::event() {
            || SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::SA1Bus) {
         SNES::debugger.step_sa1 = true;
         SNES::sa1.disassemble_opcode(t, SNES::sa1.opcode_pc, config().debugger.showHClocks);
-        string s = t;
-        s.replace(" ", "&nbsp;");
-        echo(string() << "<font color='#a000a0'>" << s << "</font><br>");
+        log(LogMessage(t, "#a000a0"));
         disassembler->refresh(Disassembler::SA1, SNES::sa1.opcode_pc);
         registerEditSA1->setEnabled(true);
         break;
@@ -437,9 +455,7 @@ void Debugger::event() {
       if(SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::APURAM) {
         SNES::debugger.step_smp = true;
         SNES::smp.disassemble_opcode(t, SNES::smp.opcode_pc);
-        string s = t;
-        s.replace(" ", "&nbsp;");
-        echo(string() << "<font color='#a000a0'>" << s << "</font><br>");
+        log(LogMessage(t, "#a000a0"));
         disassembler->refresh(Disassembler::SMP, SNES::smp.opcode_pc);
         registerEditSMP->setEnabled(true);
         break;
@@ -448,9 +464,7 @@ void Debugger::event() {
       if(SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::SFXBus) {
         SNES::debugger.step_sfx = true;
         SNES::superfx.disassemble_opcode(t, SNES::superfx.opcode_pc);
-        string s = t;
-        s.replace(" ", "&nbsp;");
-        echo(string() << "<font color='#a000a0'>" << s << "</font><br>");
+        log(LogMessage(t, "#a000a0"));
         disassembler->refresh(Disassembler::SFX, SNES::superfx.opcode_pc);
         registerEditSFX->setEnabled(true);
         break;
@@ -459,36 +473,28 @@ void Debugger::event() {
 
     case SNES::Debugger::BreakEvent::CPUStep: {
       SNES::cpu.disassemble_opcode(t, SNES::cpu.opcode_pc, config().debugger.showHClocks);
-      string s = t;
-      s.replace(" ", "&nbsp;");
-      echo(string() << "<font color='#0000a0'>" << s << "</font><br>");
+      log(LogMessage(t, "#0000a0"));
       disassembler->refresh(Disassembler::CPU, SNES::cpu.opcode_pc);
       registerEditCPU->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SMPStep: {
       SNES::smp.disassemble_opcode(t, SNES::smp.opcode_pc);
-      string s = t;
-      s.replace(" ", "&nbsp;");
-      echo(string() << "<font color='#a00000'>" << s << "</font><br>");
+      log(LogMessage(t, "#a00000"));
       disassembler->refresh(Disassembler::SMP, SNES::smp.opcode_pc);
       registerEditSMP->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SA1Step: {
       SNES::sa1.disassemble_opcode(t, SNES::sa1.opcode_pc, config().debugger.showHClocks);
-      string s = t;
-      s.replace(" ", "&nbsp;");
-      echo(string() << "<font color='#008000'>" << s << "</font><br>");
+      log(LogMessage(t, "#008000"));
       disassembler->refresh(Disassembler::SA1, SNES::sa1.opcode_pc);
       registerEditSA1->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SFXStep: {
       SNES::superfx.disassemble_opcode(t, SNES::superfx.opcode_pc, true);
-      string s = t;
-      s.replace(" ", "&nbsp;");
-      echo(string() << "<font color='#008000'>" << s << "</font><br>");
+      log(LogMessage(t, "#008000"));
       disassembler->refresh(Disassembler::SFX, SNES::superfx.opcode_pc);
       registerEditSFX->setEnabled(true);
     } break;
