@@ -38,7 +38,9 @@ private:
   } display;
 
   #include "background/background.hpp"
+public:
   #include "mmio/mmio.hpp"
+private:
   #include "screen/screen.hpp"
   #include "sprite/sprite.hpp"
   #include "window/window.hpp"
