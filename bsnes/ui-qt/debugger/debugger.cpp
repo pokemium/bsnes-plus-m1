@@ -25,8 +25,6 @@ Debugger *debugger;
 
 #include "misc/debugger-options.cpp"
 
-void* Debugger::log_context;
-
 Debugger::Debugger() {
   setObjectName("debugger");
   setWindowTitle("Debugger");
