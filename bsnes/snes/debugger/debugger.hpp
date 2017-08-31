@@ -48,7 +48,7 @@ public:
 
   void log(const char *message, const char *color = NULL);
   void logv(const char *format, const char *color = NULL, ...);
-  void (*log_func)(const char *, const char *color);
+  function<void (const char*, const char*)> logger;
 
   Debugger();
 };

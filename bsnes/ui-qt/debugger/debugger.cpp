@@ -202,8 +202,7 @@ Debugger::Debugger() {
   connect(traceMask, SIGNAL(stateChanged(int)), tracer, SLOT(setTraceMaskState(int)));
   connect(logDMA, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
 
-  log_context = this;
-  SNES::debugger.log_func = log_forwarder;
+  SNES::debugger.logger = { &Debugger::log, this };
 
   frameCounter = 0;
   synchronize();

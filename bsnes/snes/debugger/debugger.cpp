@@ -136,8 +136,8 @@ void Debugger::write(Debugger::MemorySource source, unsigned addr, uint8 data) {
 }
 
 void Debugger::log(const char *message, const char *color) {
-  if (log_func) {
-    log_func(message, color);
+  if (logger) {
+    logger(message, color);
   } else {
     printf("%s\n", message);
   }

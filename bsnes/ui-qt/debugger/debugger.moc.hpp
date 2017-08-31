@@ -71,13 +71,6 @@ public:
 
   Debugger();
 
-  static void *log_context;
-  static void log_forwarder(const char *plain_message, const char *color = NULL) {
-    if (log_context) {
-      static_cast<Debugger*>(log_context)->log(plain_message, color);
-    }
-  }
-
   enum MenuAction {
     MainWindow = 0,
     DisassemblerWindow,
