@@ -126,7 +126,7 @@ void CPUDebugger::dma_run() {
             sprintf(dest_extra, " (OAM:%04x)", ppu.regs.oam_addr);
             break;
           case 0x18:
-            sprintf(dest_extra, " (VRAM:%04x)", ppu.regs.vram_addr);
+            sprintf(dest_extra, " (VRAM:%04x)", ppu.regs.vram_addr << 1);
             break;
           case 0x22:
             sprintf(dest_extra, " (CGRAM:%04x)", ppu.regs.cgram_addr);
