@@ -46,7 +46,6 @@ public:
   };
   uint8 *usage;
   uint8 *cart_usage;
-  uint64 *opcode_usage;
 #if defined(ALT_CPU_HPP)
   uint8 mmio_read(unsigned addr);
   void mmio_write(unsigned addr, uint8 data);

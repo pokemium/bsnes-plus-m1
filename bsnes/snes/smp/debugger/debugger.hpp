@@ -36,7 +36,6 @@ public:
     UsageOpcode = 0x10,
   };
   uint8 *usage;
-  uint64 *opcode_usage;
   uint16 opcode_pc;
 
   void op_step();
