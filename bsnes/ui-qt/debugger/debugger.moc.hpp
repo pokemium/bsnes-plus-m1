@@ -3,7 +3,7 @@
 struct LogMessage {
   LogMessage(){}
   LogMessage(const string& plain_message, const string& color = "") {
-    message = string() << plain_message << "\n";
+    message = string() << plain_message;
     message.replace("\n", "<br>");
     message.replace(" ", "&nbsp;");
     if (color.length()) {

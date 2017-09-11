@@ -114,7 +114,7 @@ void CPUDebugger::dma_run() {
       if (channel[i].indirect) {
         // Indirect DMA
         // Log more useful info when need arises
-        debugger.logv("%06x DMA%u: Length:%04x (Indirect)", html_color,
+        debugger.logv("%06x DMA%u: Length:%04x (Indirect)\n", html_color,
                       pc, i, channel[i].transfer_size);
 
       } else {
@@ -164,7 +164,7 @@ void CPUDebugger::dma_run() {
             strcpy(mode_extra, "");
         }
 
-        debugger.logv("%06x DMA[%u] %06x%s %s %04x%-13s C:%04x U:%s", html_color,
+        debugger.logv("%06x DMA[%u] %06x%s %s %04x%-13s C:%04x U:%s\n", html_color,
                       pc, i, addr,
                       (channel[i].fixed_transfer ? step_fix : (channel[i].reverse_transfer ? step_dec : step_inc)),
                       (channel[i].direction ? dir_bwd : dir_fwd),

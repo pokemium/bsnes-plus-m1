@@ -419,11 +419,11 @@ void Debugger::event() {
       unsigned n = SNES::debugger.breakpoint_hit;
 
       if (n < SNES::Debugger::Breakpoints)
-        log(LogMessage(string() << "Breakpoint " << n << " hit (" << SNES::debugger.breakpoint[n].counter << ")", "#a000a0"));
+        log(LogMessage(string() << "Breakpoint " << n << " hit (" << SNES::debugger.breakpoint[n].counter << ")\n", "#a000a0"));
       else if (n == SNES::Debugger::SoftBreakCPU)
-        log(LogMessage("Software breakpoint hit (CPU)", "#a000a0"));
+        log(LogMessage("Software breakpoint hit (CPU)\n", "#a000a0"));
       else if (n == SNES::Debugger::SoftBreakSA1)
-        log(LogMessage("Software breakpoint hit (SA-1)", "#a000a0"));
+        log(LogMessage("Software breakpoint hit (SA-1)\n", "#a000a0"));
       else break;
 
       if(n == SNES::Debugger::SoftBreakCPU
@@ -433,7 +433,7 @@ void Debugger::event() {
            || SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::CGRAM) {
         SNES::debugger.step_cpu = true;
         SNES::cpu.disassemble_opcode(t, SNES::cpu.opcode_pc, config().debugger.showHClocks);
-        log(LogMessage(t, "#a000a0"));
+        log(LogMessage(string() << t << "\n", "#a000a0"));
         disassembler->refresh(Disassembler::CPU, SNES::cpu.opcode_pc);
         registerEditCPU->setEnabled(true);
         break;
@@ -443,7 +443,7 @@ void Debugger::event() {
            || SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::SA1Bus) {
         SNES::debugger.step_sa1 = true;
         SNES::sa1.disassemble_opcode(t, SNES::sa1.opcode_pc, config().debugger.showHClocks);
-        log(LogMessage(t, "#a000a0"));
+        log(LogMessage(string() << t << "\n", "#a000a0"));
         disassembler->refresh(Disassembler::SA1, SNES::sa1.opcode_pc);
         registerEditSA1->setEnabled(true);
         break;
@@ -452,7 +452,7 @@ void Debugger::event() {
       if(SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::APURAM) {
         SNES::debugger.step_smp = true;
         SNES::smp.disassemble_opcode(t, SNES::smp.opcode_pc);
-        log(LogMessage(t, "#a000a0"));
+        log(LogMessage(string() << t << "\n", "#a000a0"));
         disassembler->refresh(Disassembler::SMP, SNES::smp.opcode_pc);
         registerEditSMP->setEnabled(true);
         break;
@@ -461,7 +461,7 @@ void Debugger::event() {
       if(SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::SFXBus) {
         SNES::debugger.step_sfx = true;
         SNES::superfx.disassemble_opcode(t, SNES::superfx.opcode_pc);
-        log(LogMessage(t, "#a000a0"));
+        log(LogMessage(string() << t << "\n", "#a000a0"));
         disassembler->refresh(Disassembler::SFX, SNES::superfx.opcode_pc);
         registerEditSFX->setEnabled(true);
         break;
@@ -470,28 +470,28 @@ void Debugger::event() {
 
     case SNES::Debugger::BreakEvent::CPUStep: {
       SNES::cpu.disassemble_opcode(t, SNES::cpu.opcode_pc, config().debugger.showHClocks);
-      log(LogMessage(t, "#0000a0"));
+      log(LogMessage(string() << t << "\n", "#0000a0"));
       disassembler->refresh(Disassembler::CPU, SNES::cpu.opcode_pc);
       registerEditCPU->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SMPStep: {
       SNES::smp.disassemble_opcode(t, SNES::smp.opcode_pc);
-      log(LogMessage(t, "#a00000"));
+      log(LogMessage(string() << t << "\n", "#a00000"));
       disassembler->refresh(Disassembler::SMP, SNES::smp.opcode_pc);
       registerEditSMP->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SA1Step: {
       SNES::sa1.disassemble_opcode(t, SNES::sa1.opcode_pc, config().debugger.showHClocks);
-      log(LogMessage(t, "#008000"));
+      log(LogMessage(string() << t << "\n", "#008000"));
       disassembler->refresh(Disassembler::SA1, SNES::sa1.opcode_pc);
       registerEditSA1->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SFXStep: {
       SNES::superfx.disassemble_opcode(t, SNES::superfx.opcode_pc, true);
-      log(LogMessage(t, "#008000"));
+      log(LogMessage(string() << t << "\n", "#008000"));
       disassembler->refresh(Disassembler::SFX, SNES::superfx.opcode_pc);
       registerEditSFX->setEnabled(true);
     } break;

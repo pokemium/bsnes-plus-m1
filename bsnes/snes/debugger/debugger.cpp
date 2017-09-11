@@ -139,7 +139,7 @@ void Debugger::log(const char *message, const char *color) {
   if (logger) {
     logger(message, color);
   } else {
-    printf("%s\n", message);
+    printf("%s", message);
   }
 }
 
