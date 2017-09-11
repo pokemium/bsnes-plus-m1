@@ -51,13 +51,13 @@ public:
   void mmio_write(unsigned addr, uint8 data);
   
   uint32 opcode_pc;
-  
+
 #else
   uint8 mmio_r2180();
   void mmio_w2180(uint8 data);
   
   uint24 opcode_pc;  //points to the current opcode, used to backtrace on read/write breakpoints
-  
+
 #endif
 
   void op_step();
