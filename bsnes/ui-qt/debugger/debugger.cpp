@@ -152,8 +152,29 @@ Debugger::Debugger() {
 
   controlLayout->addSpacing(Style::WidgetSpacing);
 
-  logDMA = new QCheckBox("Log DMA transfers");
-  controlLayout->addWidget(logDMA);
+  {
+    logDMA = new QCheckBox("Log DMA transfers");
+    controlLayout->addWidget(logDMA);
+
+    logDMA_group = new QGroupBox();
+    QVBoxLayout *dmaGroupBoxLayout = new QVBoxLayout;
+    dmaGroupBoxLayout->setSpacing(0);
+    logDMA_group->setLayout(dmaGroupBoxLayout);
+    logDMA_group->setFlat(true);
+
+    logDMA_vram = new QCheckBox("VRAM");
+    dmaGroupBoxLayout->addWidget(logDMA_vram);
+    logDMA_oam = new QCheckBox("OAM");
+    dmaGroupBoxLayout->addWidget(logDMA_oam);
+    logDMA_cgram = new QCheckBox("CGRAM");
+    dmaGroupBoxLayout->addWidget(logDMA_cgram);
+    logDMA_other = new QCheckBox("Other");
+    dmaGroupBoxLayout->addWidget(logDMA_other);
+
+    controlLayout->addWidget(logDMA_group);
+    logDMA_vram->setChecked(true);
+    setLogDMAState(0);
+  }
 
   spacer = new QWidget;
   spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -198,7 +219,12 @@ Debugger::Debugger() {
   connect(traceSA1, SIGNAL(stateChanged(int)), tracer, SLOT(setSa1TraceState(int)));
   connect(traceSFX, SIGNAL(stateChanged(int)), tracer, SLOT(setSfxTraceState(int)));
   connect(traceMask, SIGNAL(stateChanged(int)), tracer, SLOT(setTraceMaskState(int)));
+
   connect(logDMA, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
+  connect(logDMA_vram, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
+  connect(logDMA_oam, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
+  connect(logDMA_cgram, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
+  connect(logDMA_other, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
 
   SNES::debugger.logger = { &Debugger::log, this };
 
@@ -403,7 +429,17 @@ void Debugger::stepOutAction() {
 }
 
 void Debugger::setLogDMAState(int state) {
-  SNES::debugger.log_dma = (state == Qt::Checked);
+  bool log_dma_enabled = logDMA->isChecked();
+  logDMA_group->setEnabled(log_dma_enabled);
+
+  uint32_t log_dma_flags = 0;
+  if (logDMA_vram->isChecked())  log_dma_flags |= SNES::Debugger::DMALogCategories::VRAM;
+  if (logDMA_oam->isChecked())   log_dma_flags |= SNES::Debugger::DMALogCategories::OAM;
+  if (logDMA_cgram->isChecked()) log_dma_flags |= SNES::Debugger::DMALogCategories::CGRAM;
+  if (logDMA_other->isChecked()) log_dma_flags |= SNES::Debugger::DMALogCategories::Other;
+
+  SNES::debugger.log_dma = log_dma_enabled;
+  SNES::debugger.log_dma_flags = log_dma_flags;
 }
 
 void Debugger::event() {

@@ -32,9 +32,20 @@ public:
   bool step_smp;
   bool step_sa1;
   bool step_sfx;
-  bool log_dma;
   bool bus_access;
   bool break_on_wdm;
+
+  struct DMALogCategories {
+    enum {
+      None     = 0,
+      VRAM     = 1 << 0,
+      OAM      = 1 << 1,
+      CGRAM    = 1 << 2,
+      Other    = 1 << 3
+    };
+  };
+  bool log_dma;
+  uint32 log_dma_flags;
 
   enum class StepType : unsigned {
     None, StepInto, StepOver, StepOut

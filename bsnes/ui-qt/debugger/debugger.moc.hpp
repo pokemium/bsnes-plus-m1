@@ -57,7 +57,14 @@ public:
   QCheckBox *traceSA1;
   QCheckBox *traceSFX;
   QCheckBox *traceMask;
+
   QCheckBox *logDMA;
+  QGroupBox *logDMA_group;
+  QCheckBox *logDMA_vram;
+  QCheckBox *logDMA_oam;
+  QCheckBox *logDMA_cgram;
+  QCheckBox *logDMA_other;
+
   QWidget *spacer;
 
   void paintEvent(QPaintEvent*);

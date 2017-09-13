@@ -102,7 +102,14 @@ void CPUDebugger::dma_run() {
   for(unsigned i = 0; i < 8; i++) {
     if(channel[i].dma_enabled == false) continue;
 
-    if (debugger.log_dma) {
+    bool log_dma = false;
+    if (channel[i].indirect && (debugger.log_dma_flags & Debugger::DMALogCategories::Other)) log_dma |= true;
+    if (channel[i].dest_addr == 0x04 && (debugger.log_dma_flags & Debugger::DMALogCategories::OAM)) log_dma |= true;
+    if (channel[i].dest_addr == 0x18 && (debugger.log_dma_flags & Debugger::DMALogCategories::VRAM)) log_dma |= true;
+    if (channel[i].dest_addr == 0x22 && (debugger.log_dma_flags & Debugger::DMALogCategories::CGRAM)) log_dma |= true;
+    log_dma &= debugger.log_dma;
+
+    if (log_dma) {
       uint32 addr = (channel[i].source_bank << 16) | (channel[i].source_addr);
       const char* html_color = "#00a0a0";
       const char* dir_fwd = "-&gt;";
