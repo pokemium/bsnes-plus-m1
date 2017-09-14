@@ -70,6 +70,7 @@ public:
   void paintEvent(QPaintEvent*);
 
   void modifySystemState(unsigned);
+  void updateConsole();
   void echo(const char *html_message);
   void log(const char *plain_message, const char *color);
   void log(const LogMessage message);

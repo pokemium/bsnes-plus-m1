@@ -152,29 +152,24 @@ Debugger::Debugger() {
 
   controlLayout->addSpacing(Style::WidgetSpacing);
 
-  {
-    logDMA = new QCheckBox("Log DMA transfers");
-    controlLayout->addWidget(logDMA);
-
-    logDMA_group = new QGroupBox();
-    QVBoxLayout *dmaGroupBoxLayout = new QVBoxLayout;
-    dmaGroupBoxLayout->setSpacing(0);
-    logDMA_group->setLayout(dmaGroupBoxLayout);
-    logDMA_group->setFlat(true);
-
-    logDMA_vram = new QCheckBox("VRAM");
-    dmaGroupBoxLayout->addWidget(logDMA_vram);
-    logDMA_oam = new QCheckBox("OAM");
-    dmaGroupBoxLayout->addWidget(logDMA_oam);
-    logDMA_cgram = new QCheckBox("CGRAM");
-    dmaGroupBoxLayout->addWidget(logDMA_cgram);
-    logDMA_other = new QCheckBox("Other");
-    dmaGroupBoxLayout->addWidget(logDMA_other);
-
-    controlLayout->addWidget(logDMA_group);
-    logDMA_vram->setChecked(true);
-    setLogDMAState(0);
-  }
+  logDMA = new QCheckBox("Log DMA transfers");
+  controlLayout->addWidget(logDMA);
+  logDMA_group = new QGroupBox();
+  QVBoxLayout *dmaGroupBoxLayout = new QVBoxLayout;
+  logDMA_group->setLayout(dmaGroupBoxLayout);
+  logDMA_group->setFlat(true);
+  logDMA_vram = new QCheckBox("VRAM");
+  logDMA_oam = new QCheckBox("OAM");
+  logDMA_cgram = new QCheckBox("CGRAM");
+  logDMA_other = new QCheckBox("Other");
+  dmaGroupBoxLayout->setSpacing(0);
+  dmaGroupBoxLayout->addWidget(logDMA_vram);
+  dmaGroupBoxLayout->addWidget(logDMA_oam);
+  dmaGroupBoxLayout->addWidget(logDMA_cgram);
+  dmaGroupBoxLayout->addWidget(logDMA_other);
+  controlLayout->addWidget(logDMA_group);
+  logDMA_vram->setChecked(true);
+  setLogDMAState(0);
 
   spacer = new QWidget;
   spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
@@ -238,15 +233,7 @@ Debugger::Debugger() {
 }
 
 void Debugger::paintEvent(QPaintEvent*) {
-  if (messageBuffer.size()) {
-    QTextCursor cursor = QTextCursor(console->document());
-    cursor.movePosition(QTextCursor::End);
-    for (LogMessage &m : messageBuffer) {
-      cursor.insertHtml(m.message);
-    }
-    messageBuffer.clear();
-    console->moveCursor(QTextCursor::End);
-  }
+  updateConsole();
 }
 
 void Debugger::modifySystemState(unsigned state) {
@@ -347,6 +334,18 @@ void Debugger::synchronize() {
     registerEditSFX->setEnabled(false);
   }
   memoryEditor->synchronize();
+}
+
+void Debugger::updateConsole() {
+  if (messageBuffer.size()) {
+    QTextCursor cursor = QTextCursor(console->document());
+    cursor.movePosition(QTextCursor::End);
+    for (LogMessage &m : messageBuffer) {
+      cursor.insertHtml(m.message);
+    }
+    messageBuffer.clear();
+    console->moveCursor(QTextCursor::End);
+  }
 }
 
 void Debugger::echo(const char *html_message) {
@@ -550,6 +549,7 @@ void Debugger::frameTick() {
 
   if (frame < frameCounter) {
     autoUpdate();
+    updateConsole();
   } else {
     // update memory editor every time since once per second isn't very useful
     // (TODO: and PPU viewers, maybe?)
