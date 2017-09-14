@@ -1,22 +1,13 @@
 #include <list>
 
 struct LogMessage {
-  LogMessage(){}
-  LogMessage(const string& plain_message, const string& color = "") {
-    message = string() << plain_message;
-    message.replace("\n", "<br>");
-    message.replace(" ", "&nbsp;");
-    if (color.length()) {
-      message = string() << "<font color='" << color << "'>" << message << "</font>";
-    }
-  }
-
   string message;
-};
+  string color;
 
-struct HtmlLogMessage : LogMessage {
-  HtmlLogMessage(const string& html_message) {
-    message = html_message;
+  LogMessage(const string& _message, const string& _color = "") {
+    color = _color;
+    message = string() << _message;
+    message.replace("\n", "\\n");
   }
 };
 
@@ -40,7 +31,7 @@ public:
   QAction *menu_misc_options;
 
   QHBoxLayout *layout;
-  QPlainTextEdit *console;
+  QWebEngineView *console;
   QVBoxLayout *consoleLayout;
   QVBoxLayout *controlLayout;
   QHBoxLayout *commandLayout;
@@ -68,12 +59,9 @@ public:
   QWidget *spacer;
 
   void paintEvent(QPaintEvent*);
-
   void modifySystemState(unsigned);
   void updateConsole();
-  void echo(const char *html_message);
-  void log(const char *plain_message, const char *color);
-  void log(const LogMessage message);
+  void echo(const char *message, const char *color = "");
   void event();
   void autoUpdate();
 
@@ -115,3 +103,4 @@ private:
 };
 
 extern Debugger *debugger;
+

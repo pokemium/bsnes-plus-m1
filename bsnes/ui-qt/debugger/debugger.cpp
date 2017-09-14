@@ -25,6 +25,28 @@ Debugger *debugger;
 
 #include "misc/debugger-options.cpp"
 
+const char consoleHtmlContent[] =
+  "<html>"
+  "<head>"
+  "<meta charset='utf-8'>"
+  "<style type = 'text/css'>"
+    "body { margin:2px; }"
+    "p,span { margin:0; white-space:pre-wrap; font-family:'SF Mono','Menlo','Liberation Mono','Lucida Console','Courier New'; font-size:10px; line-height:13px; }"
+  "</style>"
+  "<script type='text/javascript'>"
+    "window.pgend = function() { window.scrollTo(0,document.body.scrollHeight); };"
+    "window.pgclr = function() { document.body.textContent = ''; };"
+    "window.putp = function(s,c) {"
+      "const p = document.createElement('p');"
+      "p.textContent = ''+s;"
+      "if (!!c) p.style.color = ''+c;"
+      "document.body.appendChild(p);"
+    "};"
+  "</script>"
+  "</head>"
+  "<body></body>"
+  "</html>";
+
 Debugger::Debugger() {
   setObjectName("debugger");
   setWindowTitle("Debugger");
@@ -61,14 +83,8 @@ Debugger::Debugger() {
   consoleLayout->setSpacing(0);
   layout->addLayout(consoleLayout);
 
-  console = new QPlainTextEdit;
-  console->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  console->setReadOnly(true);
-  console->setUndoRedoEnabled(false);
-  console->setFont(QFont(Style::Monospace, Style::MonospaceSize));
-  console->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  console->setMinimumWidth((98 + 4) * console->fontMetrics().width(' '));
-  console->setMinimumHeight((25 + 1) * console->fontMetrics().height());
+  console = new QWebEngineView;
+  console->setHtml(QString(consoleHtmlContent));
   consoleLayout->addWidget(console);
 
   QTabWidget *editTabs = new QTabWidget;
@@ -221,7 +237,7 @@ Debugger::Debugger() {
   connect(logDMA_cgram, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
   connect(logDMA_other, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
 
-  SNES::debugger.logger = { &Debugger::log, this };
+  SNES::debugger.logger = { &Debugger::echo, this };
 
   frameCounter = 0;
   synchronize();
@@ -338,31 +354,21 @@ void Debugger::synchronize() {
 
 void Debugger::updateConsole() {
   if (messageBuffer.size()) {
-    QTextCursor cursor = QTextCursor(console->document());
-    cursor.movePosition(QTextCursor::End);
     for (LogMessage &m : messageBuffer) {
-      cursor.insertHtml(m.message);
+      console->page()->runJavaScript(string() << "putp('" << m.message << "', '" << m.color << "')");
     }
+    console->page()->runJavaScript("pgend()");
     messageBuffer.clear();
-    console->moveCursor(QTextCursor::End);
   }
 }
 
-void Debugger::echo(const char *html_message) {
-  log(HtmlLogMessage(html_message));
-}
-
-void Debugger::log(const char *plain_message, const char *color) {
-  log(LogMessage(plain_message, color));
-}
-
-void Debugger::log(const LogMessage message) {
-  messageBuffer.emplace_back(message);
+void Debugger::echo(const char *message, const char *color) {
+  messageBuffer.emplace_back(LogMessage(message, color));
 }
 
 void Debugger::clear() {
   messageBuffer.clear();
-  console->clear();
+  console->page()->runJavaScript("pgclr()");
 }
 
 void Debugger::switchWindow() {
@@ -454,11 +460,11 @@ void Debugger::event() {
       unsigned n = SNES::debugger.breakpoint_hit;
 
       if (n < SNES::Debugger::Breakpoints)
-        log(LogMessage(string() << "Breakpoint " << n << " hit (" << SNES::debugger.breakpoint[n].counter << ")\n", "#a000a0"));
+        echo(string() << "Breakpoint " << n << " hit (" << SNES::debugger.breakpoint[n].counter << ")", "#a000a0");
       else if (n == SNES::Debugger::SoftBreakCPU)
-        log(LogMessage("Software breakpoint hit (CPU)\n", "#a000a0"));
+        echo("Software breakpoint hit (CPU)", "#a000a0");
       else if (n == SNES::Debugger::SoftBreakSA1)
-        log(LogMessage("Software breakpoint hit (SA-1)\n", "#a000a0"));
+        echo("Software breakpoint hit (SA-1)", "#a000a0");
       else break;
 
       if(n == SNES::Debugger::SoftBreakCPU
@@ -468,7 +474,7 @@ void Debugger::event() {
            || SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::CGRAM) {
         SNES::debugger.step_cpu = true;
         SNES::cpu.disassemble_opcode(t, SNES::cpu.opcode_pc, config().debugger.showHClocks);
-        log(LogMessage(string() << t << "\n", "#a000a0"));
+        echo(t, "#a000a0");
         disassembler->refresh(Disassembler::CPU, SNES::cpu.opcode_pc);
         registerEditCPU->setEnabled(true);
         break;
@@ -478,7 +484,7 @@ void Debugger::event() {
            || SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::SA1Bus) {
         SNES::debugger.step_sa1 = true;
         SNES::sa1.disassemble_opcode(t, SNES::sa1.opcode_pc, config().debugger.showHClocks);
-        log(LogMessage(string() << t << "\n", "#a000a0"));
+        echo(t, "#a000a0");
         disassembler->refresh(Disassembler::SA1, SNES::sa1.opcode_pc);
         registerEditSA1->setEnabled(true);
         break;
@@ -487,7 +493,7 @@ void Debugger::event() {
       if(SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::APURAM) {
         SNES::debugger.step_smp = true;
         SNES::smp.disassemble_opcode(t, SNES::smp.opcode_pc);
-        log(LogMessage(string() << t << "\n", "#a000a0"));
+        echo(t, "#a000a0");
         disassembler->refresh(Disassembler::SMP, SNES::smp.opcode_pc);
         registerEditSMP->setEnabled(true);
         break;
@@ -496,7 +502,7 @@ void Debugger::event() {
       if(SNES::debugger.breakpoint[n].source == SNES::Debugger::Breakpoint::Source::SFXBus) {
         SNES::debugger.step_sfx = true;
         SNES::superfx.disassemble_opcode(t, SNES::superfx.opcode_pc);
-        log(LogMessage(string() << t << "\n", "#a000a0"));
+        echo(t, "#a000a0");
         disassembler->refresh(Disassembler::SFX, SNES::superfx.opcode_pc);
         registerEditSFX->setEnabled(true);
         break;
@@ -505,28 +511,28 @@ void Debugger::event() {
 
     case SNES::Debugger::BreakEvent::CPUStep: {
       SNES::cpu.disassemble_opcode(t, SNES::cpu.opcode_pc, config().debugger.showHClocks);
-      log(LogMessage(string() << t << "\n", "#0000a0"));
+      echo(t, "#0000a0");
       disassembler->refresh(Disassembler::CPU, SNES::cpu.opcode_pc);
       registerEditCPU->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SMPStep: {
       SNES::smp.disassemble_opcode(t, SNES::smp.opcode_pc);
-      log(LogMessage(string() << t << "\n", "#a00000"));
+      echo(t, "#a00000");
       disassembler->refresh(Disassembler::SMP, SNES::smp.opcode_pc);
       registerEditSMP->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SA1Step: {
       SNES::sa1.disassemble_opcode(t, SNES::sa1.opcode_pc, config().debugger.showHClocks);
-      log(LogMessage(string() << t << "\n", "#008000"));
+      echo(t, "#008000");
       disassembler->refresh(Disassembler::SA1, SNES::sa1.opcode_pc);
       registerEditSA1->setEnabled(true);
     } break;
 
     case SNES::Debugger::BreakEvent::SFXStep: {
       SNES::superfx.disassemble_opcode(t, SNES::superfx.opcode_pc, true);
-      log(LogMessage(string() << t << "\n", "#008000"));
+      echo(t, "#008000");
       disassembler->refresh(Disassembler::SFX, SNES::superfx.opcode_pc);
       registerEditSFX->setEnabled(true);
     } break;
