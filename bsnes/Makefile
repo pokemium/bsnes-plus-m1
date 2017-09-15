@@ -42,15 +42,15 @@ flags += -Wno-switch -Wno-absolute-value -Wno-parentheses
 ifeq ($(platform),x)
   link += -ldl -lX11 -lXext
 else ifeq ($(platform),osx)
-  osxbundle := ../bsnes+.app
+  osxbundle := ../bsnes+
   ifneq ($(profile),compatibility)
-    osxbundle := ../bsnes+$(profile).app
+    osxbundle := $(osxbundle)$(profile)
   endif
+  osxbundle := $(osxbundle).app
   flags += -mmacosx-version-min=10.9
   link += -mmacosx-version-min=10.9 -headerpad_max_install_names
 else ifeq ($(platform),win)
   link += -mwindows
-# link += -mconsole
   link += -mthreads -luuid -lkernel32 -luser32 -lgdi32 -lcomctl32 -lcomdlg32 -lshell32 -lole32
   link += -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc
 else
@@ -70,7 +70,10 @@ compile = \
 
 %.o: $<; $(call compile)
 
-all: build plugins;
+all: build plugins
+ifeq ($(platform),osx)
+	$(qtpath)/bin/macdeployqt $(osxbundle)
+endif
 
 include $(snes)/Makefile
 include $(ui)/Makefile
@@ -93,7 +96,7 @@ else
 	$(strip $(cpp) -o out/bsnes $(objects) $(link))
 endif
 
-install: build plugins
+install: all
 ifeq ($(platform),x)
 	install -D -m 755 out/bsnes $(DESTDIR)$(prefix)/bin/bsnes
 	install -D -m 644 data/bsnes.png $(DESTDIR)$(prefix)/share/pixmaps/bsnes.png
@@ -116,7 +119,7 @@ else
 	@echo Install not available for current platform
 endif
 
-plugins: build
+plugins:
 	@$(MAKE) -C ../snesreader
 	@$(MAKE) -C ../snesfilter
 	@$(MAKE) -C ../snesmusic
@@ -147,9 +150,6 @@ clean: ui_clean plugins_clean
 	-@$(call delete,*.ilk)
 	-@$(call delete,*.pdb)
 	-@$(call delete,*.manifest)
-ifeq ($(platform),osx)
-	@rm -rf $(osxbundle)
-endif
 
 plugins_clean:
 	@$(MAKE) clean -C ../snesreader
