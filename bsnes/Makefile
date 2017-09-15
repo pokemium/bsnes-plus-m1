@@ -16,9 +16,11 @@ cpp     := $(compiler) -std=gnu++11
 flags   := -I. -I$(snes)
 link    :=
 objects :=
+deployqt_flags :=
 
 ifeq ($(DEBUG), 1)
   flags += -O0 -g
+  deployqt_flags += -no-strip
 else
   flags += -O3 -fomit-frame-pointer
   ifeq ($(platform),osx)
@@ -72,8 +74,11 @@ compile = \
 
 all: build plugins
 ifeq ($(platform),osx)
-	$(qtpath)/bin/macdeployqt $(osxbundle)
+	$(qtpath)/bin/macdeployqt $(osxbundle) $(deployqt_flags)
 endif
+
+deploy:
+	$(qtpath)/bin/macdeployqt $(osxbundle) $(deployqt_flags)
 
 include $(snes)/Makefile
 include $(ui)/Makefile
