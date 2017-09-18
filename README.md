@@ -25,12 +25,10 @@ Non-debugging features:
 - IPS and BPS soft patching
 - Multiple emulation improvements backported from bsnes/higan (mostly via bsnes-classic)
 
-## Coming soon
+## Binaries
 
-- On-the-fly ROM saving and reloading from the memory editor for quick hacking and testing
-- More keyboard shortcuts for menus, etc.
-- Automatic saving/loading breakpoints between sessions
-- Similar addressing improvements for cheats
+- Windows binaries are available in devinacker's [upstream repository](https://github.com/devinacker/bsnes-plus/releases)
+- macOS binaries are available [here](https://goo.gl/06Ofmd)
 
 ## Building on Windows
 
@@ -41,10 +39,10 @@ Non-debugging features:
 ## Building on macOS
 
 - Install a C++ toolchain ([Xcode](https://developer.apple.com) is probably the easiest route)
-- Install [Qt](https://www.qt.io/download-open-source/) (only the core macOS package is required)
+- Install [Qt](https://www.qt.io/download-open-source/) (required components: `macOS` and `Qt WebEngine`)
 - Add a `qtpath` environment variable pointing to your Qt installation (ie. add `export qtpath=$HOME/Qt/5.9.1/clang_64` to .bash_profile)
-- Run `make` from the bsnes directory
-- Alternatively run `./build_distribution_osx`. When done you should end up with stand-alone app bundles and a redistributable archive in the `distribution` directory.
+- Run `make` from repository root directory
+- Alternatively run `make dist` to create stand-alone app bundles and a redistributable archive in the `distribution` directory
 
 
 ## Building on Linux / other *nix
