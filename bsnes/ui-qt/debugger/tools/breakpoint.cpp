@@ -37,6 +37,13 @@ BreakpointItem::BreakpointItem(unsigned id_) : id(id_) {
   layout->addWidget(mode_x, 1, BreakExecute);
   connect(mode_x, SIGNAL(toggled(bool)), this, SLOT(toggle()));
 
+#if defined(PLATFORM_OSX)
+  int cbWidth = Style::WidgetSpacing * 3;
+  layout->setColumnMinimumWidth(BreakRead, cbWidth - 3);
+  layout->setColumnMinimumWidth(BreakWrite, cbWidth - 3);
+  layout->setColumnMinimumWidth(BreakExecute, cbWidth);
+#endif
+
   source = new QComboBox;
   source->addItem("S-CPU bus");
   source->addItem("S-SMP bus");
@@ -50,18 +57,33 @@ BreakpointItem::BreakpointItem(unsigned id_) : id(id_) {
   connect(source, SIGNAL(currentIndexChanged(int)), this, SLOT(toggle()));
 
   if (id_ == 0) {
-    layout->addWidget(new QLabel("Address Range"), 0, BreakAddrStart, 1, BreakAddrEnd - BreakAddrStart + 1);
-    layout->addWidget(new QLabel("Data"), 0, BreakData);
-    QLabel *label = new QLabel("R");
-    label->setAlignment(Qt::AlignHCenter);
+    QLabel *label = new QLabel("Address Range");
+    QFont font = label->font();
+  #if defined(PLATFORM_OSX)
+    font.setPointSize(font.pointSize() - 2);
+  #endif
+    label->setFont(font);
+    layout->addWidget(label, 0, BreakAddrStart, 1, BreakAddrEnd - BreakAddrStart + 1);
+
+    label = new QLabel("Data");
+    label->setFont(font);
+    layout->addWidget(label, 0, BreakData);
+
+    label = new QLabel("R");
+    label->setFont(font);
     layout->addWidget(label, 0, BreakRead);
+
     label = new QLabel("W");
-    label->setAlignment(Qt::AlignHCenter);
+    label->setFont(font);
     layout->addWidget(label, 0, BreakWrite);
+
     label = new QLabel("X");
-    label->setAlignment(Qt::AlignHCenter);
+    label->setFont(font);
     layout->addWidget(label, 0, BreakExecute);
-    layout->addWidget(new QLabel("Source"), 0, BreakSource);
+
+    label = new QLabel("Source");
+    label->setFont(font);
+    layout->addWidget(label, 0, BreakSource);
   }
 
   init();
