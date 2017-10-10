@@ -74,7 +74,7 @@ Debugger::Debugger() {
 
   symbolsCPU = new SymbolMap();
   symbolsCPU->loadFromString(DEFAULT_SYMBOL_MAP_CPU);
-  
+
   symbolsSA1 = new SymbolMap();
 
   debugCPU = new DebuggerView(registerEditCPU, new CpuDisasmProcessor(CpuDisasmProcessor::CPU, symbolsCPU), true);

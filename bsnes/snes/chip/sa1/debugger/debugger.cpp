@@ -18,15 +18,15 @@ void SA1Debugger::op_step() {
   if(debugger.step_sa1 &&
       (debugger.step_type == Debugger::StepType::StepInto ||
        (debugger.step_type >= Debugger::StepType::StepOver && debugger.call_count < 0))) {
-      
+
     debugger.break_event = Debugger::BreakEvent::SA1Step;
     debugger.step_type = Debugger::StepType::None;
     scheduler.exit(Scheduler::ExitReason::DebuggerEvent);
   } else {
-        
-    if (debugger.break_on_wdm) {
+
+    if (debugger.break_on_wdm || debugger.break_on_brk) {
       uint8 opcode = disassembler_read(opcode_pc);
-      if (opcode == 0x42) {
+      if ((opcode == 0x42 && debugger.break_on_wdm) || (opcode == 0x00 && debugger.break_on_brk)) {
         debugger.breakpoint_hit = Debugger::SoftBreakSA1;
         debugger.break_event = Debugger::BreakEvent::BreakpointHit;
         scheduler.exit(Scheduler::ExitReason::DebuggerEvent);
@@ -44,7 +44,7 @@ void SA1Debugger::op_step() {
       debugger.call_count = -1;
       debugger.step_over_new = false;
     }
-  
+
     uint8 opcode = disassembler_read(opcode_pc);
     if (opcode == 0x20 || opcode == 0x22 || opcode == 0xfc) {
       debugger.call_count++;
@@ -56,10 +56,10 @@ void SA1Debugger::op_step() {
 
 alwaysinline uint8_t SA1Debugger::op_readpc() {
   usage[regs.pc] |= UsageExec;
-  
+
   int offset = cartridge.rom_offset(regs.pc);
   if (offset >= 0) (*cart_usage)[offset] |= UsageExec;
-  
+
   // execute code without setting read flag
   return SA1::op_read((regs.pc.b << 16) + regs.pc.w++);
 }
@@ -67,10 +67,10 @@ alwaysinline uint8_t SA1Debugger::op_readpc() {
 uint8 SA1Debugger::op_read(uint32 addr) {
   uint8 data = SA1::op_read(addr);
   usage[addr] |= UsageRead;
-  
+
   int offset = cartridge.rom_offset(addr);
   if (offset >= 0) (*cart_usage)[offset] |= UsageRead;
-  
+
   debugger.breakpoint_test(Debugger::Breakpoint::Source::SA1Bus, Debugger::Breakpoint::Mode::Read, addr, data);
   return data;
 }
@@ -108,7 +108,7 @@ bool SA1Debugger::property(unsigned id, string &name, string &value) {
 
   // internal
   item("SA-1 MDR", string("0x", hex<2>(regs.mdr)));
-  
+
   // $2200
   item("$2200", "");
   item("SA-1 IRQ", mmio.sa1_irq);
@@ -116,12 +116,12 @@ bool SA1Debugger::property(unsigned id, string &name, string &value) {
   item("SA-1 Reset", mmio.sa1_resb);
   item("SA-1 NMI", mmio.sa1_nmi);
   item("S-CPU to SA-1 Message", string("0x", hex<1>(mmio.smeg)));
-  
+
   // $2201
   item("$2201", "");
   item("S-CPU IRQ", mmio.cpu_irqen);
   item("DMA IRQ", mmio.chdma_irqen);
-  
+
   // $2203-2208
   item("$2203-$2204", "");
   item("SA-1 Reset Vector", string("0x", hex<4>(mmio.crv)));
@@ -129,38 +129,38 @@ bool SA1Debugger::property(unsigned id, string &name, string &value) {
   item("SA-1 NMI Vector", string("0x", hex<4>(mmio.cnv)));
   item("$2207-$2208", "");
   item("SA-1 IRQ Vector", string("0x", hex<4>(mmio.civ)));
-  
+
   // $220c-220f
   item("$220c-$220d", "");
   item("S-CPU NMI Vector", string("0x", hex<4>(mmio.snv)));
   item("$220e-$220f", "");
   item("S-CPU IRQ Vector", string("0x", hex<4>(mmio.siv)));
-  
+
   // $2210
   item("$2210", "");
   item("Timer Type", mmio.hvselb ? "Linear" : "H/V");
   item("V-Count Enable", mmio.ven);
   item("H-Count Enable", mmio.hen);
-  
+
   // $2220-2223
   item("$2220", "");
   item("Bank C Projection", mmio.cbmode);
   item("Bank C ($00-$1F)", string("0x", hex<1>(mmio.cb), " (0x", hex<6>(mmio.cb << 20), ")"));
-  
+
   item("$2221", "");
   item("Bank D Projection", mmio.dbmode);
   item("Bank D ($20-$3F)", string("0x", hex<1>(mmio.db), " (0x", hex<6>(mmio.db << 20), ")"));
-  
+
   item("$2222", "");
   item("Bank E Projection", mmio.ebmode);
   item("Bank E ($80-$9F)", string("0x", hex<1>(mmio.eb), " (0x", hex<6>(mmio.eb << 20), ")"));
-  
+
   item("$2223", "");
   item("Bank F Projection", mmio.fbmode);
   item("Bank F ($a0-$bF)", string("0x", hex<1>(mmio.fb), " (0x", hex<6>(mmio.fb << 20), ")"));
-  
+
   // TODO: rest of these
-  
+
   #undef item
   return false;
 }
@@ -176,7 +176,7 @@ unsigned SA1Debugger::getRegister(unsigned id) {
   case RegisterDB: return regs.db;
   case RegisterP:  return regs.p;
   }
-  
+
   return 0;
 }
 
@@ -205,7 +205,7 @@ bool SA1Debugger::getFlag(unsigned id) {
   case FlagZ: return regs.p.z;
   case FlagC: return regs.p.c;
   }
-  
+
   return false;
 }
 
@@ -218,14 +218,14 @@ void SA1Debugger::setFlag(unsigned id, bool value) {
   case FlagI: regs.p.i = value; return;
   case FlagZ: regs.p.z = value; return;
   case FlagC: regs.p.c = value; return;
-  case FlagM: 
-    regs.p.m = value; 
+  case FlagM:
+    regs.p.m = value;
     update_table();
     return;
-  case FlagX: 
+  case FlagX:
     regs.p.x = value;
     if (value)
-      regs.x.h = regs.y.h = 0; 
+      regs.x.h = regs.y.h = 0;
     update_table();
     return;
   }
