@@ -111,6 +111,10 @@ bool Cartridge::loadNormal(const char *base) {
   loadMemory(baseName, ".srm", SNES::memory::cartram);
   loadMemory(baseName, ".rtc", SNES::memory::cartrtc);
 
+  #if defined(DEBUGGER)
+    debugger->symbolsCPU->loadFromFile(nall::basename(baseName), ".sym");
+  #endif
+
   fileName = baseName;
   name = notdir(nall::basename(baseName));
 
@@ -156,7 +160,7 @@ bool Cartridge::loadBsx(const char *base, const char *slot) {
     fileName = slotAName;
   else
     fileName = baseName;
-  
+
   name = *slot
   ? notdir(nall::basename(slotAName))
   : notdir(nall::basename(baseName));
@@ -212,7 +216,7 @@ bool Cartridge::loadSuperGameBoy(const char *base, const char *slot) {
 bool Cartridge::loadSpc(const char *base) {
   unload();
   if (!music.opened()) return false;
-  
+
   bool status = false;
   // APU RAM + DSP registers
   uint8_t *dump = new uint8_t[0x10000 + 128];
@@ -221,9 +225,9 @@ bool Cartridge::loadSpc(const char *base) {
   uint8_t regs[4];
   uint8_t p;
   audio.clear();
-  
+
   status = music.load_spc(baseName = base, dump, pc, regs, p);
-  
+
   if (status) {
     SNES::cartridge.basename = nall::basename(baseName);
 
@@ -231,24 +235,24 @@ bool Cartridge::loadSpc(const char *base) {
     name = notdir(nall::basename(baseName));
 
     application.currentRom = base;
-  
+
     // dummy cartridge
     const char *dummyCart = "\
     <?xml version='1.0' encoding='UTF-8'?>\
     <cartridge region='NTSC' />\
     ";
     SNES::cartridge.load(SNES::Cartridge::Mode::Normal, lstring() << dummyCart);
-  
+
     utility.modifySystemState(Utility::LoadCartridge);
-  
+
     // load the SPC dump
     SNES::smp.load_dump(dump, pc, regs, p);
-  
+
     // put the CPU to sleep (hacky)
     SNES::memory::wram[0] = 0xDB; // STP
     SNES::cpu.regs.pc = 0;
   }
-  
+
   delete[] dump;
   return status;
 }
@@ -256,17 +260,17 @@ bool Cartridge::loadSpc(const char *base) {
 bool Cartridge::loadSnsf(const char *base) {
   unload();
   if (!music.opened()) return false;
-  
+
   uint8_t *data;
   unsigned size;
   audio.clear();
-  
+
   bool status = music.load_snsf(baseName = base, data, size);
-  
+
   if (status) {
     SNES::memory::cartrom.copy(data, size);
     cartridge.baseXml = SNESCartridge(data, size).xmlMemoryMap;
-    
+
     SNES::cartridge.basename = nall::basename(baseName);
     SNES::cartridge.load(SNES::Cartridge::Mode::Normal, lstring() << cartridge.baseXml);
 
@@ -276,10 +280,10 @@ bool Cartridge::loadSnsf(const char *base) {
     application.currentRom = base;
 
     utility.modifySystemState(Utility::LoadCartridge);
-  
+
     delete[] data;
   }
-  
+
   return status;
 }
 
@@ -316,7 +320,7 @@ void Cartridge::saveMemoryPack() {
 
   string filename = nall::basename(cartridge.fileName);
   string fullpath = config().path.save;
-  
+
   time_t systemTime = time(0);
   tm *currentTime = localtime(&systemTime);
   char t[512];
@@ -461,7 +465,7 @@ bool Cartridge::applyIPS(string &filename, uint8_t *&data, unsigned &size) {
   delete[] data;
   data = outdata;
   size = max(size, outsize);
-  
+
   return true;
 }
 
@@ -491,7 +495,7 @@ bool Cartridge::loadCartridge(string &filename, string &xml, SNES::MappedRAM &me
 
   //remove copier header, if it exists
   if((size & 0x7fff) == 512) memmove(data, data + 512, size -= 512);
-  
+
   name = string(nall::basename(filename), ".xml");
   if(patchApplied == "" && file::exists(name)) {
     //prefer manually created XML cartridge mapping
