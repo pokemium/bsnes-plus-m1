@@ -1,77 +1,79 @@
 # bsnes-plus
 
-bsnes-plus (or bsnes+) is a fork of bsnes (based on bsnes-classic) intended to
-introduce some new features and improvements, mostly aimed at debugging.
+This bnes-plus version is a development fork used to extend to original bnes-plus
+with some new features, which are useful if you develop own games.
+
+This fork is only tested under linux, yet.
+
+For further details about bnes-plus, see the [original repository](https://github.com/devinacker/bsnes-plus).
 
 ## What's new
 
-- "Step over" and "step out" buttons in debugger
-- Improved debugger UI with register editing
-- Redesigned memory editor and breakpoint editor
-- Improved handling of address mirroring for breakpoints (extends to the entire address space, not just RAM)
-- Real-time code and data highlighting in memory editor, with fast searching for known code/data locations and unexplored regions
-- Cartridge ROM and RAM views in memory editor for mapper-agnostic analysis
-- Enhanced VRAM, sprite, and tilemap viewing
-- SA-1 disassembly and debugging
-- SA-1 bus and BW-RAM viewing and (partial) usage logging
-- Super FX disassembly and debugging
-- Super FX bus viewing and usage logging
+![New debugger](./debugger.jpg?raw=true "New debugger")
 
-Non-debugging features:
+- Merged disassembler and debugger into one window
+- The disassembler has some simple syntax highlighting
+- The disassembler supports the WLA symbol files (also some additional own features)
+- Break on BRK
+- Additional start up parameters
+- A custom debug port to allow some debug stuff while developing own games (see below)
 
-- Satellaview / BS-X support
-- SPC file dumping
-- SPC output visualizer (keyboards & peak meters)
-- IPS and BPS soft patching
-- Multiple emulation improvements backported from bsnes/higan (mostly via bsnes-classic)
+
+## New command line arguments
+
+- `--enable-debug-interface` Enables the debug interface (see below)
+- `--break-immediately` Stops the emulator immediately (debug from the beginning)
+- `--break-on-brk` Stops the emulator on BRK opcodes
+
+
+## The symbol file format
+
+It is possible to place a symbol file beside the ROM to import symbols.
+
+The format is an extended version of the WLA symbol files
+
+    ; myrom.sym
+
+    [labels]
+    00:8000 start
+    00:8012 my_own_routine
+
+
+## The command interface
+
+When enabled (using the command line), it is possible to execute debug commands
+using the program code.
+
+Simply write the command number to the registers `$420E` and `$420F` and define
+the actual command in the symbol file.
+
+Example for assembler:
+
+    LDX   #$1 ; the command ID
+    STX   $420E
+
+Example within the symbol file
+
+    ; myrom.sym
+
+    [debug]
+    0001 PRINT INFO Hello world!
+
+The first 4 digits are hex digits defining the command ID (start with low IDs).
+
+This example would write `Hello world` to the debuggers console.
+
+### Implemented commands
+
+| Command | Usage |
+| ------- | ----- |
+| PRINT | `LEVEL MESSAGE...` - Level might be DEBUG, TRACE, INFO, NOTICE, WARN, ERROR or FATAL. Prints a debug message to the console |
+
 
 ## Coming soon
 
-- On-the-fly ROM saving and reloading from the memory editor for quick hacking and testing
-- More keyboard shortcuts for menus, etc.
-- Automatic saving/loading breakpoints between sessions
-- Similar addressing improvements for cheats
-
-## Building on Windows
-
-- Get mingw-w64 (http://mingw-w64.yaxm.org/doku.php/download)
-- Install Qt 4.8.6 (http://download.qt.io/archive/qt/) and make sure its `bin` directory is in your path
-- Run `mingw32-make`
-
-Building with the original MinGW used to be the preferred way to do it, but made building "out of the box" annoying for various reasons (including requiring outdated DirectX headers/libs and problems with some native Windows code) and is no longer supported.
-
-## Building on OS X
-
-- Install a C++ toolchain ([Xcode](https://developer.apple.com) is probably the easiest route)  
-- Install Qt 4.8 (get [Brew](http://brew.sh) and run `brew install qt`)  
-- Make sure the `qtpath` environment variable points to your Qt installation, ie. add `export qtpath=/usr/local/Cellar/qt/4.8.7_2` to .bash_profile.
-- Run `make`from the bsnes directory.
-
-If you're running macOS 10.12 Sierra you will (probably not) be able to install Qt4 using brew. If so, try installing this unofficial branch:
-
-```
-brew install cartr/qt4/qt
-brew linkapps qt
-```
-
-## Building on Linux / other *nix
-
-As there is no ``configure`` step, make sure necessary Qt4/X11 packages are installed. On a Debian/Ubuntu system, it would require a command like:
-
-```
-apt-get install libqt4-dev libqt4-dev-bin libxv-dev libsdl1.2-dev libao-dev
-libopenal-dev g++
-```
-
-Afterwards, run ``make`` and if everything works out correctly you will find the output binary in the ``out/`` directory.
-
-The snesfilter, snesreader, and supergameboy plugins can all be built by running make (or mingw32-make) after you've configured your environment to build bsnes itself.
-After building, just copy the .dll, .so, or .dylib files into the same directory as bsnes itself.
-
-This fork of bsnes doesn't include the alternate UI based on byuu's `phoenix` library. The purpose of this fork is primarily to add additional UI functionality and I have no intention of implementing every new feature twice using completely different libraries just to keep both versions of the UI at parity.
-
-bsnes v073 and its derivatives are licensed under the GPL v2; see *Help > License ...* for more information.
-
-## Contributors
-
-See *Help > Documentation ...* for a list of authors.
+- Toggle breakpoints in disassembler
+- Add comments to code from disassembler (to remember some code)
+- Add symbols from disassembler (when reverse engineering)
+- Symbol index window for finding symbols in large ROMs
+- etc.
