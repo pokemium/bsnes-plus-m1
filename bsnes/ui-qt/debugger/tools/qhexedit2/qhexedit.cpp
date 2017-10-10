@@ -16,7 +16,7 @@ QHexEdit::QHexEdit(QWidget *parent) : QAbstractScrollArea(parent)
 {
     _undoStack = new UndoStack(this);
     setFont(QFont(Style::Monospace));
-    
+
     setAddressAreaColor(this->palette().alternateBase().color());
     setHighlightingColor(QColor(0xff, 0xff, 0x99, 0xff));
     setSelectionColor(this->palette().highlight().color());
@@ -148,7 +148,7 @@ void QHexEdit::setCursorPosition(qint64 position)
     _pxCursorX = (((x / 2) * 3) + (x % 2)) * _pxCharWidth + _pxPosHexX;
 
     _cursorRect = QRect(_pxCursorX, _pxCursorY + _pxCursorWidth, _pxCharWidth, _pxCursorWidth);
-    
+
     // 4. Immiadately draw new cursor
     _blink = true;
     viewport()->update(_cursorRect);
@@ -269,7 +269,7 @@ QByteArray QHexEdit::getBuffer(qint64 pos, qint64 size)
 
     for (qint64 i = pos; i >= 0 && i < _editorSize && i < pos + size; i++)
         buffer.append(reader(i));
-        
+
     return buffer;
 }
 
@@ -496,7 +496,7 @@ void QHexEdit::keyPressEvent(QKeyEvent *event)
                 {
                     qint64 len = getSelectionEnd() - getSelectionBegin();
                     replace(getSelectionBegin(), (int)len, QByteArray((int)len, char(0)));
-                    
+
                     setCursorPosition(2*_bPosCurrent);
                     resetSelection(2*_bPosCurrent);
                 }
@@ -525,7 +525,7 @@ void QHexEdit::keyPressEvent(QKeyEvent *event)
             QByteArray bytes;
             for (qint64 i = getSelectionBegin(); i <= getSelectionEnd(); i++)
                 bytes.append(reader ? reader(i) : 0);
-            
+
             QByteArray ba = bytes.toHex();
             for (qint64 idx = 32; idx < ba.size(); idx +=33)
                 ba.insert(idx, "\n");
@@ -533,7 +533,7 @@ void QHexEdit::keyPressEvent(QKeyEvent *event)
             clipboard->setText(ba);
             qint64 len = getSelectionEnd() - getSelectionBegin();
             replace(getSelectionBegin(), (int)len, QByteArray((int)len, char(0)));
-            
+
             setCursorPosition(2*getSelectionBegin());
             resetSelection(2*getSelectionBegin());
         }
@@ -544,7 +544,7 @@ void QHexEdit::keyPressEvent(QKeyEvent *event)
             QClipboard *clipboard = QApplication::clipboard();
             QByteArray ba = QByteArray().fromHex(clipboard->text().toLatin1());
             replace(_bPosCurrent, ba.size(), ba);
-            
+
             setCursorPosition(_cursorPosition + 2 * ba.size());
             resetSelection(getSelectionBegin());
         }
@@ -575,14 +575,14 @@ void QHexEdit::keyPressEvent(QKeyEvent *event)
                 setCursorPosition(2 * _bPosCurrent);
                 QByteArray ba = QByteArray(getSelectionEnd() - getSelectionBegin(), char(0));
                 replace(_bPosCurrent, ba.size(), ba);
-                
+
                 resetSelection(2 * _bPosCurrent);
             }
             else
             {
                 _bPosCurrent -= 1;
                 replace(_bPosCurrent, char(0));
-                
+
                 _bPosCurrent -= 1;
                 setCursorPosition(2 * _bPosCurrent);
                 resetSelection(2 * _bPosCurrent);
@@ -609,7 +609,7 @@ void QHexEdit::keyPressEvent(QKeyEvent *event)
         QByteArray bytes;
         for (qint64 i = getSelectionBegin(); i <= getSelectionEnd(); i++)
             bytes.append(reader ? reader(i) : 0);
-        
+
         QByteArray ba = bytes.toHex();
         for (qint64 idx = 32; idx < ba.size(); idx +=33)
             ba.insert(idx, "\n");
@@ -715,7 +715,7 @@ void QHexEdit::paintEvent(QPaintEvent *event)
                             painter.setPen(_penHighlighted);
                         }
                     */
-                    
+
                     uint8_t this_usage = usage(posBa);
                     if (this_usage & UsageExec && this_usage & UsageRead) {
                         painter.setPen(colUsageRWExec);
@@ -886,7 +886,7 @@ void QHexEdit::readBuffers()
     _dataShown.clear();
     for (qint64 i = _bPosFirst; i < qMin(_editorSize, _bPosLast + BYTES_PER_LINE + 1); i++)
         _dataShown.append(reader ? reader(i) : 0);
-    
+
     _hexDataShown = QByteArray(_dataShown.toHex());
 }
 
@@ -923,4 +923,3 @@ void QHexEdit::updateCursor()
         _blink = true;
     viewport()->update(_cursorRect);
 }
-
