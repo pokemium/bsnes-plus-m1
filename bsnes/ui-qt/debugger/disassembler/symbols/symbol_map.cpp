@@ -86,7 +86,8 @@ void SymbolMap::loadFromString(const string &file) {
 
   enum Section {
     SECTION_UNKNOWN,
-    SECTION_LABELS
+    SECTION_LABELS,
+    SECTION_DEBUG
   };
 
   Section section = SECTION_LABELS;
@@ -111,6 +112,7 @@ void SymbolMap::loadFromString(const string &file) {
 
     if (row[0] == '[') {
       if (row == "[labels]") { section = SECTION_LABELS; }
+      else if (row == "[debug]") { section = SECTION_DEBUG; }
       else { section = SECTION_UNKNOWN; }
       continue;
     }
@@ -121,6 +123,10 @@ void SymbolMap::loadFromString(const string &file) {
         (nall::hex(nall::substr(row, 0, 2)) << 16) | nall::hex(nall::substr(row, 3, 4)),
         nall::substr(row, 8, row.length() - 8)
       );
+      break;
+
+    case SECTION_DEBUG:
+      debugPort.addCommand(nall::hex(nall::substr(row, 0, 4)), nall::substr(row, 5, row.length() - 5));
       break;
 
     case SECTION_UNKNOWN:

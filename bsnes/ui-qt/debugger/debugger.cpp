@@ -7,6 +7,8 @@ Debugger *debugger;
 
 #include "tracer.cpp"
 
+#include "disassembler/debugport/debugport.cpp"
+
 #include "disassembler/symbols/symbol_map.cpp"
 #include "disassembler/symbols/symbol_map_cpu.hpp"
 
@@ -45,6 +47,8 @@ Debugger::Debugger() {
 
   menu = new QMenuBar;
   layout->setMenuBar(menu);
+
+  debugPort.setup();
 
   menu_tools = menu->addMenu("Tools");
   menu_tools_breakpoint = menu_tools->addAction("Breakpoint Editor ...");

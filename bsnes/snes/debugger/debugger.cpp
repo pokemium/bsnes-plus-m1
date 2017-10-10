@@ -135,6 +135,18 @@ void Debugger::write(Debugger::MemorySource source, unsigned addr, uint8 data) {
   }
 }
 
+void Debugger::writeDebugPort(uint32 addr, uint8 data) {
+  if (addr == 0x420e) {
+    debugPort = data;
+  } else {
+    debugPort = (debugPort & 0xFF) | (data << 8);
+
+    if (debug_port_event) {
+      debug_port_event(debugPort);
+    }
+  }
+}
+
 Debugger::Debugger() {
   break_event = BreakEvent::None;
 
@@ -155,6 +167,7 @@ Debugger::Debugger() {
   bus_access = false;
   break_on_wdm = false;
   break_on_brk = false;
+  enable_debug_interface = false;
 
   step_type = StepType::None;
 }

@@ -44,6 +44,11 @@ bool Application::parseArgumentSwitch(const string& arg, const string& parameter
     return false;
   }
 
+  if(arg == "--enable-debug-interface") {
+    SNES::debugger.enable_debug_interface = true;
+    return false;
+  }
+
   if(arg == "--breakpoint" || arg == "-b") {
     if(parameter == "" || parameter[0] == '-') return false;
 
@@ -63,6 +68,7 @@ void Application::printArguments() {
   puts("  -h / --help                       show help");
   #if defined(DEBUGGER)
   puts("  --show-debugger                   open debugger window on startup\n"
+       "  --enable-debug-interface          enables the debug port at $420E/$420F\n"
        "  --break-immediately               breaks when loading the cartridge\n"
        "  --break-on-brk                    break on BRK opcodes\n"
        "  -b / --breakpoint <breakpoint>    add breakpoint\n"

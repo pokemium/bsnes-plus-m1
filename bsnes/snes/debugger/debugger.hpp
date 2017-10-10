@@ -34,6 +34,11 @@ public:
   bool bus_access;
   bool break_on_wdm;
   bool break_on_brk;
+  bool enable_debug_interface;
+
+  void writeDebugPort(uint32 addr, uint8 data);
+  uint16 debugPort;
+  function<void (uint16)> debug_port_event;
 
   enum class StepType : unsigned {
     None, StepInto, StepOver, StepOut
