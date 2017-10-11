@@ -17,6 +17,7 @@ For further details about bnes-plus, see the [original repository](https://githu
 - Break on BRK
 - Additional start up parameters
 - A custom debug port to allow some debug stuff while developing own games (see below)
+- Toggle breakpoints in disassembler by clicking on the address
 
 
 ## New command line arguments
@@ -72,7 +73,6 @@ This example would write `Hello world` to the debuggers console.
 
 ## Coming soon
 
-- Toggle breakpoints in disassembler
 - Add comments to code from disassembler (to remember some code)
 - Add symbols from disassembler (when reverse engineering)
 - Symbol index window for finding symbols in large ROMs
