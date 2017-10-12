@@ -40,6 +40,16 @@ Debugger::Debugger() {
   setGeometryString(&config().geometry.debugger);
   application.windowList.append(this);
 
+  tracer = new Tracer;
+  breakpointEditor = new BreakpointEditor;
+  memoryEditor = new MemoryEditor;
+  propertiesViewer = new PropertiesViewer;
+  vramViewer = new VramViewer;
+  tilemapViewer = new TilemapViewer;
+  oamViewer = new OamViewer;
+  cgramViewer = new CgramViewer;
+  debuggerOptions = new DebuggerOptions;
+
   layout = new QVBoxLayout;
   layout->setMargin(Style::WindowMargin);
   layout->setSpacing(Style::WidgetSpacing);
@@ -137,16 +147,6 @@ Debugger::Debugger() {
   traceMask->setDefaultAction(new QAction("Enable trace mask", this));
   traceMask->defaultAction()->setCheckable(true);
   toolBar->addWidget(traceMask);
-
-  tracer = new Tracer;
-  breakpointEditor = new BreakpointEditor;
-  memoryEditor = new MemoryEditor;
-  propertiesViewer = new PropertiesViewer;
-  vramViewer = new VramViewer;
-  tilemapViewer = new TilemapViewer;
-  oamViewer = new OamViewer;
-  cgramViewer = new CgramViewer;
-  debuggerOptions = new DebuggerOptions;
 
   connect(menu_tools_breakpoint, SIGNAL(triggered()), breakpointEditor, SLOT(show()));
   connect(menu_tools_memory, SIGNAL(triggered()), memoryEditor, SLOT(show()));
