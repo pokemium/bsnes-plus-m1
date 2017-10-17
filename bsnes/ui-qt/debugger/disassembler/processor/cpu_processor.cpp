@@ -234,6 +234,8 @@ void CpuDisasmProcessor::findKnownRange(uint32_t currentAddress, uint32_t &start
   bool result;
   unsigned line, i;
 
+  //SNES::cpuAnalyst.performAnalysis(currentAddress);
+
   startAddress = currentAddress;
   endAddress = currentAddress;
   currentAddressLine = 0;
