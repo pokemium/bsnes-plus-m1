@@ -17,22 +17,31 @@ DebuggerOptions::DebuggerOptions() {
   layout->addWidget(cacheUsageBox);
   saveBreakpointsBox = new QCheckBox("Save breakpoints to disk between sessions");
   layout->addWidget(saveBreakpointsBox);
+  saveSymbolsBox = new QCheckBox("Save symbols to disk between sessions");
+  layout->addWidget(saveSymbolsBox);
   showHClocksBox = new QCheckBox("Show H-position in clocks instead of dots");
   layout->addWidget(showHClocksBox);
 
   synchronize();
   connect(cacheUsageBox, SIGNAL(toggled(bool)), this, SLOT(toggleCacheUsage(bool)));
   connect(saveBreakpointsBox, SIGNAL(toggled(bool)), this, SLOT(toggleSaveBreakpoints(bool)));
+  connect(saveSymbolsBox, SIGNAL(toggled(bool)), this, SLOT(toggleSaveSymbols(bool)));
   connect(showHClocksBox, SIGNAL(toggled(bool)), this, SLOT(toggleHClocks(bool)));
 }
 
 void DebuggerOptions::synchronize() {
   cacheUsageBox->setChecked(config().debugger.cacheUsageToDisk);
+  saveBreakpointsBox->setChecked(config().debugger.saveBreakpoints);
+  saveSymbolsBox->setChecked(config().debugger.saveSymbols);
   showHClocksBox->setChecked(config().debugger.showHClocks);
 }
 
 void DebuggerOptions::toggleCacheUsage(bool on) {
   config().debugger.cacheUsageToDisk = on;
+}
+
+void DebuggerOptions::toggleSaveSymbols(bool on) {
+  config().debugger.saveSymbols = on;
 }
 
 void DebuggerOptions::toggleSaveBreakpoints(bool on) {

@@ -179,7 +179,7 @@ Debugger::Debugger() {
 
   frameCounter = 0;
   synchronize();
-  resize(855, 425);
+  resize(855, 745);
 
   QTimer *updateTimer = new QTimer(this);
   connect(updateTimer, SIGNAL(timeout()), this, SLOT(frameTick()));
@@ -189,6 +189,8 @@ Debugger::Debugger() {
 void Debugger::modifySystemState(unsigned state) {
   string usagefile = filepath(nall::basename(cartridge.fileName), config().path.data);
   string bpfile = usagefile;
+  string symfile = usagefile;
+
   usagefile << "-usage.bin";
   bpfile << ".bp";
   file fp;
@@ -242,6 +244,10 @@ void Debugger::modifySystemState(unsigned state) {
       if (SNES::cartridge.has_sa1())     fp.write(SNES::sa1.usage, 1 << 24);
       if (SNES::cartridge.has_superfx()) fp.write(SNES::superfx.usage, 1 << 23);
       fp.close();
+    }
+
+    if(config().debugger.saveSymbols) {
+      debugger->symbolsCPU->saveToFile(nall::basename(symfile), ".sym");
     }
 
     if(config().debugger.saveBreakpoints) {

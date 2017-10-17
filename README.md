@@ -19,6 +19,7 @@ For further details about bnes-plus, see the [original repository](https://githu
 - A custom debug port to allow some debug stuff while developing own games (see below)
 - Toggle breakpoints in disassembler by clicking on the address
 - Symbol index with filter and direct option to toggle breakpoints
+- Add comments to code from disassembler (to remember some code)
 
 
 ## New command line arguments
@@ -74,6 +75,4 @@ This example would write `Hello world!` to the debuggers console.
 
 ## Coming soon
 
-- Add comments to code from disassembler (to remember some code)
 - Add symbols from disassembler (when reverse engineering)
-- etc.

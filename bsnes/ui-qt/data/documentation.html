@@ -95,6 +95,9 @@ By clicking on the address bar in the main disassembly window, you can toggle a 
 can identify a breakpoint by its red background color.
 <p>
 
+You can add a comment to the disassembler by clicking in the comment section. All comments and symbols will be saved
+to the disk, if the "save symbols" option in the options window is activated.
+
 <h3>Debugger Menu: Tools</h3>
 <h4>Breakpoint Editor</h4><br>
 
@@ -215,6 +218,39 @@ point to it using the "Paths" tab of the config window.
 <p>
 
 For more BS-X information and downloads, visit the <a href="https://bsxproj.superfamicom.org" target="_blank">BS-X Project</a> site.
+
+<h3>Debugger interface</h3><br>
+
+If you are into developing own games, you can activate a custom debugging interface which allows you to invoke emulator commands
+from your assembler code.
+<p>
+
+To activate the command interface, add the <b>--enable-debug-interface</b> command line when starting bsnes-plus.
+<p>
+
+To invoke a command write the 16-bit command to the registers $420E and $420F.
+<p>
+
+Commands can be defined in a symbol file located next to the ROM called <b>myrom.sym</b>
+<p>
+
+<code><pre>
+  ; myrom.sym
+
+  [commands]
+  0001 PRINT INFO Hello world!
+</pre></code>
+<p>
+
+The first 4 hex digits represent the command ID which needs to be written to the registers $420E and $420F, followed by the
+actual command.
+
+<h4>Known commands</h4><br>
+
+<table>
+  <tr><th>Command</th><th>Arguments</th><th>Description</th></tr>
+  <tr><th>PRINT</th><td>[LEVEL] [MESSAGE]</td><td>Level might be DEBUG, TRACE, INFO, NOTICE, WARN, ERROR or FATAL. Prints a debug message to the console</td></tr>
+</table>
 
 <h3>Known Limitations</h3><br>
 
