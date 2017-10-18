@@ -20,6 +20,7 @@ For further details about bnes-plus, see the [original repository](https://githu
 - Toggle breakpoints in disassembler by clicking on the address
 - Symbol index with filter and direct option to toggle breakpoints
 - Add comments to code from disassembler (to remember some code)
+- Look ahead of first-time-disassembled code
 
 
 ## New command line arguments
