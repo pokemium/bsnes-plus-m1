@@ -21,6 +21,8 @@ For further details about bnes-plus, see the [original repository](https://githu
 - Symbol index with filter and direct option to toggle breakpoints
 - Add comments to code from disassembler (to remember some code)
 - Look ahead of first-time-disassembled code
+- Add symbols from disassembler (right click on line)
+- Displays simple recognized loops
 
 
 ## New command line arguments
@@ -72,8 +74,3 @@ This example would write `Hello world!` to the debuggers console.
 | Command | Usage |
 | ------- | ----- |
 | PRINT | `LEVEL MESSAGE...` - Level might be DEBUG, TRACE, INFO, NOTICE, WARN, ERROR or FATAL. Prints a debug message to the console |
-
-
-## Coming soon
-
-- Add symbols from disassembler (when reverse engineering)
