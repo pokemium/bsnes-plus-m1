@@ -9,6 +9,7 @@ TilemapViewer::TilemapViewer() {
   application.windowList.append(this);
 
   inUpdateFormCall = false;
+  inExportClickedCall = false;
 
   layout = new QHBoxLayout;
   layout->setSizeConstraint(QLayout::SetMinimumSize);
@@ -43,8 +44,17 @@ TilemapViewer::TilemapViewer() {
   autoUpdateBox = new QCheckBox("Auto update");
   sidebarLayout->addRow("", autoUpdateBox);
 
+
+  buttonLayout = new QHBoxLayout;
+
+  exportButton = new QPushButton("Export");
+  buttonLayout->addWidget(exportButton);
+
   refreshButton = new QPushButton("Refresh");
-  sidebarLayout->addRow(refreshButton);
+  buttonLayout->addWidget(refreshButton);
+
+  sidebarLayout->addRow(buttonLayout);
+
 
   sidebarLayout->addRow(new QWidget);
 
@@ -102,6 +112,20 @@ TilemapViewer::TilemapViewer() {
   sidebarLayout->addRow(new QWidget);
 
 
+  overrideBackgroundColor = new QCheckBox("Override Background Color");
+  sidebarLayout->addRow(overrideBackgroundColor);
+
+  customBgColorCombo = new QComboBox;
+  customBgColorCombo->addItem("Transparent", QVariant(qRgba(0, 0, 0, 0)));
+  customBgColorCombo->addItem("Magenta",     QVariant(qRgb(255, 0, 255)));
+  customBgColorCombo->addItem("Cyan",        QVariant(qRgb(0, 255, 255)));
+  customBgColorCombo->addItem("White",       QVariant(qRgb(255, 255, 255)));
+  customBgColorCombo->addItem("Black",       QVariant(qRgb(0, 0, 0)));
+  sidebarLayout->addRow("BG Color:", customBgColorCombo);
+
+
+  sidebarLayout->addRow(new QWidget);
+
   tileInfo = new QLabel;
   sidebarLayout->addRow(tileInfo);
 
@@ -114,6 +138,7 @@ TilemapViewer::TilemapViewer() {
   updateForm();
 
 
+  connect(exportButton,  SIGNAL(clicked(bool)), this, SLOT(onExportClicked()));
   connect(refreshButton, SIGNAL(released()), this, SLOT(refresh()));
   connect(zoomCombo,     SIGNAL(currentIndexChanged(int)), this, SLOT(onZoomChanged(int)));
   connect(showGrid,      SIGNAL(clicked(bool)), imageGridWidget, SLOT(setShowGrid(bool)));
@@ -124,12 +149,15 @@ TilemapViewer::TilemapViewer() {
   for(int i = 0; i < 4; i++) {
     connect(bgButtons[i],SIGNAL(clicked(bool)),               this, SLOT(refresh()));
   }
-  connect(screenMode,    SIGNAL(valueChanged(int)),           this, SLOT(refresh()));
-  connect(bitDepth,      SIGNAL(currentIndexChanged(int)),    this, SLOT(refresh()));
-  connect(screenSize,    SIGNAL(currentIndexChanged(int)),    this, SLOT(refresh()));
-  connect(tileSize,      SIGNAL(currentIndexChanged(int)),    this, SLOT(refresh()));
-  connect(tileAddr,      SIGNAL(textChanged(const QString&)), this, SLOT(refresh()));
-  connect(screenAddr,    SIGNAL(textChanged(const QString&)), this, SLOT(refresh()));
+  connect(screenMode,    SIGNAL(valueChanged(int)),          this, SLOT(refresh()));
+  connect(bitDepth,      SIGNAL(activated(int)),             this, SLOT(refresh()));
+  connect(screenSize,    SIGNAL(activated(int)),             this, SLOT(refresh()));
+  connect(tileSize,      SIGNAL(activated(int)),             this, SLOT(refresh()));
+  connect(tileAddr,      SIGNAL(textEdited(const QString&)), this, SLOT(refresh()));
+  connect(screenAddr,    SIGNAL(textEdited(const QString&)), this, SLOT(refresh()));
+
+  connect(overrideBackgroundColor, SIGNAL(clicked(bool)),    this, SLOT(refresh()));
+  connect(customBgColorCombo,      SIGNAL(activated(int)),   this, SLOT(refresh()));
 
   connect(imageGridWidget, SIGNAL(selectedChanged()),         this, SLOT(refresh()));
 }
@@ -144,17 +172,16 @@ void TilemapViewer::show() {
 }
 
 void TilemapViewer::refresh() {
-  if(inUpdateFormCall) return;
+  if(inUpdateFormCall || inExportClickedCall) return;
 
   if(SNES::cartridge.loaded()) {
     updateRendererSettings();
-    updateForm();
 
-    renderer.buildPalette();
-
-    QImage image = renderer.drawTilemap();
-    imageGridWidget->setImage(image);
+    renderer.drawTilemap();
+    imageGridWidget->setImage(renderer.image);
     imageGridWidget->setGridSize(renderer.tileSizePx());
+
+    updateForm();
   }
 
   updateTileInfo();
@@ -163,6 +190,30 @@ void TilemapViewer::refresh() {
 void TilemapViewer::onZoomChanged(int index) {
   unsigned z = zoomCombo->itemData(index).toUInt();
   imageGridWidget->setZoom(z);
+}
+
+void TilemapViewer::onExportClicked() {
+  if(renderer.image.isNull()) return;
+
+  inExportClickedCall = true;
+
+  QFileDialog saveDialog(this, "Export Tilemap");
+  saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+  saveDialog.setNameFilter("PNG Image (*.png)");
+  saveDialog.setDefaultSuffix("png");
+  saveDialog.exec();
+
+  QStringList selectedFiles = saveDialog.selectedFiles();
+
+  if(saveDialog.result() == QDialog::Accepted && selectedFiles.size() == 1) {
+    QImageWriter writer(selectedFiles.first(), "PNG");
+    bool s = writer.write(renderer.image);
+    if(s == false) {
+      QMessageBox::critical(this, "ERROR", "Unable to export tilemap\n\n" + writer.errorString());
+    }
+  }
+
+  inExportClickedCall = false;
 }
 
 void TilemapViewer::updateRendererSettings() {
@@ -193,10 +244,16 @@ void TilemapViewer::updateRendererSettings() {
   } else {
     renderer.loadTilemapSettings();
   }
+
+  int i = customBgColorCombo->currentIndex();
+  renderer.overrideBackgroundColor = overrideBackgroundColor->isChecked();
+  renderer.customBackgroundColor = customBgColorCombo->itemData(i).toUInt();
 }
 
 void TilemapViewer::updateForm() {
   inUpdateFormCall = true;
+
+  exportButton->setEnabled(!renderer.image.isNull());
 
   bool csm = customScreenMode->isChecked();
   screenMode->setEnabled(csm);
@@ -232,6 +289,8 @@ void TilemapViewer::updateForm() {
     screenSize->setCurrentIndex(ss);
     tileSize->setCurrentIndex(renderer.tileSize);
   }
+
+  customBgColorCombo->setEnabled(overrideBackgroundColor->isChecked());
 
   inUpdateFormCall = false;
 }
