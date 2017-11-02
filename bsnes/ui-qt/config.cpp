@@ -146,7 +146,7 @@ Configuration::Configuration() {
   attach(geometry.memoryEditor     = "", "geometry.memoryEditor");
   attach(geometry.propertiesViewer = "", "geometry.propertiesViewer");
   attach(geometry.layerToggle      = "", "geometry.layerToggle");
-  attach(geometry.vramViewer       = "", "geometry.vramViewer");
+  //attach(geometry.vramViewer       = "", "geometry.vramViewer");
   attach(geometry.tileViewer       = "", "geometry.tileViewer");
   attach(geometry.tilemapViewer    = "", "geometry.tilemapViewer");
   attach(geometry.oamViewer        = "", "geometry.oamViewer");
