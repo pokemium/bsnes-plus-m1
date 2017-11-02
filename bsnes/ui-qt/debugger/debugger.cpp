@@ -392,6 +392,7 @@ void Debugger::menuAction(MenuAction action) {
     case MemoryWindow:        memoryEditor->show(); break;
     case PropertiesWindow:    propertiesViewer->show(); break;
     case VRAMWindow:          vramViewer->show(); break;
+    case TileWindow:          tileViewer->show(); break;
     case TilemapWindow:       tilemapViewer->show(); break;
     case OAMWindow:           oamViewer->show(); break;
     case CGRAMWindow:         cgramViewer->show(); break;

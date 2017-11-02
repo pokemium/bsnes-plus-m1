@@ -209,6 +209,7 @@ MainWindow::MainWindow() {
   debugger_menu->addSeparator();
 
   { QAction *debug_action = debugger_menu->addAction("Video RAM Viewer"); debug_action->setData(Debugger::MenuAction::VRAMWindow); }
+  { QAction *debug_action = debugger_menu->addAction("Tile Viewer"); debug_action->setData(Debugger::MenuAction::TileWindow); }
   { QAction *debug_action = debugger_menu->addAction("Tilemap Viewer"); debug_action->setData(Debugger::MenuAction::TilemapWindow); }
   { QAction *debug_action = debugger_menu->addAction("Sprite Viewer"); debug_action->setData(Debugger::MenuAction::OAMWindow); }
   { QAction *debug_action = debugger_menu->addAction("Palette Viewer"); debug_action->setData(Debugger::MenuAction::CGRAMWindow); }

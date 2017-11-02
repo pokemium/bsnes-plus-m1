@@ -75,6 +75,7 @@ public:
     MemoryWindow,
     PropertiesWindow,
     VRAMWindow,
+    TileWindow,
     TilemapWindow,
     OAMWindow,
     CGRAMWindow,
