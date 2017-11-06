@@ -24,7 +24,7 @@ OamObject OamObject::getObject(unsigned i) {
   }
 
   obj.xpos = (x << 8) + d0;
-  if(obj.xpos > 256) obj.xpos = sclip<9>(obj.xpos);
+  //if(obj.xpos > 256) obj.xpos = sclip<9>(obj.xpos);
 
   obj.ypos = d1;
   obj.character = d2;
@@ -52,6 +52,7 @@ OamViewer::OamViewer() {
   setLayout(layout);
 
   list = new QTreeWidget;
+  list->setFont(QFont(Style::Monospace, Style::MonospaceSize));
   list->setColumnCount(8);
   list->setHeaderLabels(QStringList() << "#" << "Size" << "X" << "Y" << "Char" << "Pri" << "Pal" << "Flags");
   list->setAllColumnsShowFocus(true);
@@ -73,7 +74,7 @@ OamViewer::OamViewer() {
 
   for(unsigned i = 0; i < 128; i++) {
     QTreeWidgetItem *item = new QTreeWidgetItem(list);
-    item->setData(0, Qt::DisplayRole, i);
+    item->setText(0, string() << hex<2>(i));
     item->setData(0, Qt::UserRole, QVariant(i));
     item->setTextAlignment(0, Qt::AlignRight);
     item->setTextAlignment(1, Qt::AlignHCenter);
@@ -140,9 +141,9 @@ void OamViewer::refresh() {
     if(obj.vFlip) flags << "H";
 
     item->setText(1, string() << obj.width << "x" << obj.height);
-    item->setData(2, Qt::DisplayRole, obj.xpos);
-    item->setData(3, Qt::DisplayRole, obj.ypos);
-    item->setData(4, Qt::DisplayRole, obj.character + (obj.table << 8));
+    item->setText(2, string() << hex<3>(obj.xpos));
+    item->setText(3, string() << hex<2>(obj.ypos));
+    item->setText(4, string() << hex<3>(obj.character + (obj.table << 8)));
     item->setData(5, Qt::DisplayRole, obj.priority);
     item->setData(6, Qt::DisplayRole, obj.palette);
     item->setText(7, flags);

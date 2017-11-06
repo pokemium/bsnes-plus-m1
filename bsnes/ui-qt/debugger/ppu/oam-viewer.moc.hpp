@@ -1,7 +1,7 @@
 struct OamObject {
   unsigned width;
   unsigned height;
-  signed   xpos;
+  unsigned xpos;
   unsigned ypos;
   unsigned character;
   unsigned priority;
