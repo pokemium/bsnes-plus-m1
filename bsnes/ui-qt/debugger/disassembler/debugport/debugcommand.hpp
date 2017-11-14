@@ -4,7 +4,14 @@
 // ------------------------------------------------------------------------
 class DebugCommand {
 public:
+  DebugCommand() {}
+  virtual ~DebugCommand() {}
+
   virtual void execute() = 0;
+
+  virtual nall::string dump() const {
+    return "";
+  }
 };
 
 // ------------------------------------------------------------------------
@@ -14,6 +21,7 @@ public:
 
   DebugPrintCommand(const string &command);
   virtual void execute();
+  virtual nall::string dump() const;
 
   Level level;
   string message;

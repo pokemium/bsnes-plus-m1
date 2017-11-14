@@ -43,3 +43,20 @@ void DebugPrintCommand::execute() {
 
   debugger->echo(string() << "<font color='#" << color << "'> " << prefix << " " << message << "</font><br>");
 }
+
+// ------------------------------------------------------------------------
+nall::string DebugPrintCommand::dump() const {
+  string levelText = "INFO";
+
+  switch (level) {
+  case TRACE: levelText = "TRACE"; break;
+  case DEBUG: levelText = "DEBUG"; break;
+  case INFO: levelText = "INFO"; break;
+  case NOTICE: levelText = "NOTICE"; break;
+  case WARN: levelText = "WARN"; break;
+  case ERROR: levelText = "ERROR"; break;
+  case FATAL: levelText = "FATAL"; break;
+  }
+
+  return string("PRINT ", levelText, " ", message);
+}

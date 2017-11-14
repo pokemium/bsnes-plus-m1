@@ -1,6 +1,8 @@
 #ifndef __SYMBOL_MAP__H__
 #define __SYMBOL_MAP__H__
 
+class SymbolFileAdapters;
+
 struct Symbol {
   enum Type { INVALID, LOCATION, COMMENT };
 
@@ -72,6 +74,7 @@ public:
   void addLocation(uint32_t address, const string &name);
   void addComment(uint32_t address, const string &name);
   void addSymbol(uint32_t address, const Symbol &name);
+  void addCommand(uint32_t id, const string &content);
   void removeSymbol(uint32_t address, Symbol::Type type);
   void loadFromString(const string &file);
   void loadFromFile(const string &baseName, const string &ext);
@@ -86,9 +89,11 @@ public:
 
   bool isValid;
   SymbolsLists symbols;
+  SymbolFileAdapters *adapters;
 
 signals:
   void updated();
+
 };
 
 #endif
