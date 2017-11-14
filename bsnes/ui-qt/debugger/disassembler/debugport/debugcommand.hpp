@@ -17,7 +17,7 @@ public:
 // ------------------------------------------------------------------------
 class DebugPrintCommand : public DebugCommand {
 public:
-  enum Level { TRACE, DEBUG, INFO, NOTICE, WARN, ERROR, FATAL };
+  enum Level { Trace, Debug, Info, Notice, Warn, Error, Fatal };
 
   DebugPrintCommand(const string &command);
   virtual void execute();
