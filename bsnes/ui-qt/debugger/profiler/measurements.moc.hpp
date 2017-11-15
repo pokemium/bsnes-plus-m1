@@ -84,7 +84,7 @@ private:
   bool isInCalculation;
 
 signals:
-  void triggered(uint32_t);
+  void triggered(int32_t);
 };
 
 

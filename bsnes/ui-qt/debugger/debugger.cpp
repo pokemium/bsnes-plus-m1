@@ -17,6 +17,7 @@ Debugger *debugger;
 #include "disassembler/processor/cpu_processor.cpp"
 
 #include "profiler/measurements.cpp"
+#include "profiler/graphview.cpp"
 #include "profiler/measurementeditor.cpp"
 
 #include "registeredit.cpp"
@@ -192,8 +193,6 @@ Debugger::Debugger() {
   QTimer *updateTimer = new QTimer(this);
   connect(updateTimer, SIGNAL(timeout()), this, SLOT(frameTick()));
   updateTimer->start(15);
-
-  measurementEditor->show();
 }
 
 void Debugger::modifySystemState(unsigned state) {

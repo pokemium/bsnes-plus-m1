@@ -248,6 +248,10 @@ MeasurementEditor::MeasurementEditor()
   // PREVIEW
   QGroupBox *previewBox = new QGroupBox("Preview");
   QVBoxLayout *previewBoxLayout = new QVBoxLayout();
+  preview = new GraphView();
+  preview->setMinimumHeight(150);
+  preview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+  previewBoxLayout->addWidget(preview);
   previewBox->setLayout(previewBoxLayout);
   rightLayout->addWidget(previewBox);
 
@@ -460,6 +464,8 @@ void MeasurementEditor::select(Measurement *measurement) {
   currentMeasurement = measurement;
   left.currentMeasurement = &measurement->left;
   right.currentMeasurement = &measurement->right;
+
+  preview->setMeasurement(measurement);
 }
 
 // ------------------------------------------------------------------------

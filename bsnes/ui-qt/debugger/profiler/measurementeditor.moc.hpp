@@ -48,6 +48,7 @@ public:
   QVBoxLayout *rightLayout;
   QHBoxLayout *trigOptLayout;
   QHBoxLayout *calculateLayout;
+  GraphView *preview;
 
   // general
   QVBoxLayout *generalLayout;

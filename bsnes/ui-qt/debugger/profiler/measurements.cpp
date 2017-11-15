@@ -117,14 +117,14 @@ void Measurement::setTriggerMeasurement(bool enabled, Measurement *measurement) 
   }
 
   if (triggerOnCalculation && triggerMeasurement) {
-    disconnect(triggerMeasurement, SIGNAL(triggered(uint32_t)), this, SLOT(trigger()));
+    disconnect(triggerMeasurement, SIGNAL(triggered(int32_t)), this, SLOT(trigger()));
   }
 
   triggerOnCalculation = enabled;
   triggerMeasurement = measurement;
 
   if (triggerOnCalculation && triggerMeasurement) {
-    connect(triggerMeasurement, SIGNAL(triggered(uint32_t)), this, SLOT(trigger()));
+    connect(triggerMeasurement, SIGNAL(triggered(int32_t)), this, SLOT(trigger()));
   }
 }
 
