@@ -32,7 +32,7 @@ void MeasurementEditorConfig::update(MeasurementValue *measurement) {
   variableAddress->setText(hex<6,'0'>(measurement->variableAddress));
   uint32_t type = measurement->variableSize | (measurement->variableSigned ? 0x100 : 0);
   variableType->setCurrentIndex(variableType->findData(QVariant(type)));
-  variableSource->setCurrentIndex(variableSource->findData(QVariant(measurement->variableSource)));
+  variableSource->setCurrentIndex(variableSource->findData(QVariant((uint32_t)measurement->variableSource)));
   specialValue->setCurrentIndex(specialValue->findData(QVariant(measurement->specialVariable)));
 }
 
@@ -61,7 +61,8 @@ void MeasurementEditorConfig::onUpdate() {
   currentMeasurement->variableSize = type & 0xFF;
   currentMeasurement->variableSigned = type & 0x100;
 
-  currentMeasurement->variableSource = variableSource->itemData(variableSource->currentIndex()).toString();
+  currentMeasurement->variableSource = (SNES::Debugger::MemorySource)variableSource->itemData(variableSource->currentIndex()).toUInt();
+  currentMeasurement->specialVariable = (MeasurementValue::SpecialVariable)specialValue->itemData(specialValue->currentIndex()).toUInt();
 
   int32_t otherIndex = otherValue->itemData(otherValue->currentIndex()).toInt();
   currentMeasurement->other = NULL;
@@ -99,20 +100,20 @@ void MeasurementEditorConfig::build(const QString &name) {
 
   variableSource = new QComboBox();
   variableLayout->addWidget(variableSource);
-  variableSource->addItem("S-CPU bus", QVariant("cpu"));
-  variableSource->addItem("S-SMP bus", QVariant("smp"));
-  variableSource->addItem("S-PPU VRAM", QVariant("vram"));
-  variableSource->addItem("S-PPU OAM", QVariant("oam"));
-  variableSource->addItem("S-PPU CGRAM", QVariant("cgram"));
-  variableSource->addItem("SA-1 bus", QVariant("sa1"));
-  variableSource->addItem("SuperFX bus", QVariant("sfx"));
+  variableSource->addItem("S-CPU bus", QVariant((uint32_t)SNES::Debugger::MemorySource::CPUBus));
+  variableSource->addItem("S-SMP bus", QVariant((uint32_t)SNES::Debugger::MemorySource::APUBus));
+  variableSource->addItem("S-PPU VRAM", QVariant((uint32_t)SNES::Debugger::MemorySource::VRAM));
+  variableSource->addItem("S-PPU OAM", QVariant((uint32_t)SNES::Debugger::MemorySource::OAM));
+  variableSource->addItem("S-PPU CGRAM", QVariant((uint32_t)SNES::Debugger::MemorySource::CGRAM));
+  variableSource->addItem("SA-1 bus", QVariant((uint32_t)SNES::Debugger::MemorySource::SA1Bus));
+  variableSource->addItem("SuperFX bus", QVariant((uint32_t)SNES::Debugger::MemorySource::SFXBus));
   contentLayout->addLayout(variableLayout);
 
   variableType = new QComboBox();
-  variableType->addItem("int8", QVariant(0x108));
-  variableType->addItem("int16", QVariant(0x110));
-  variableType->addItem("int24", QVariant(0x118));
-  variableType->addItem("int32", QVariant(0x120));
+  //variableType->addItem("int8", QVariant(0x108));
+  //variableType->addItem("int16", QVariant(0x110));
+  //variableType->addItem("int24", QVariant(0x118));
+  //variableType->addItem("int32", QVariant(0x120));
   variableType->addItem("uint8", QVariant(0x008));
   variableType->addItem("uint16", QVariant(0x010));
   variableType->addItem("uint24", QVariant(0x018));
@@ -124,6 +125,8 @@ void MeasurementEditorConfig::build(const QString &name) {
 
   specialValue = new QComboBox();
   specialValue->addItem("V-Counter", QVariant(MeasurementValue::SPECIAL_VCOUNTER));
+  specialValue->addItem("H-Counter", QVariant(MeasurementValue::SPECIAL_HCOUNTER));
+  specialValue->addItem("Frame-Counter", QVariant(MeasurementValue::SPECIAL_FRAME));
   contentLayout->addWidget(specialValue);
 
   contentLayout->addStretch(1);
@@ -223,6 +226,9 @@ MeasurementEditor::MeasurementEditor()
   otherValue = new QComboBox();
   triggerLayout->addWidget(otherValue);
 
+  triggerNow = new QPushButton("Trigger manually");
+  triggerLayout->addWidget(triggerNow);
+
   // GENERAL
   QGroupBox *nameBox = new QGroupBox("Name");
   QVBoxLayout *nameBoxLayout = new QVBoxLayout();
@@ -247,6 +253,7 @@ MeasurementEditor::MeasurementEditor()
 
   connect(createMeasurementButton, SIGNAL(released()), this, SLOT(createMeasurement()));
   connect(removeMeasurementButton, SIGNAL(released()), this, SLOT(removeMeasurement()));
+  connect(triggerNow, SIGNAL(released()), this, SLOT(trigger()));
   connect(measurements, SIGNAL(created(Measurement*)), this, SLOT(updateList()));
   connect(measurements, SIGNAL(removed(Measurement*)), this, SLOT(updateList()));
   connect(measurements, SIGNAL(removed(Measurement*)), this, SLOT(updateList()));
@@ -471,15 +478,21 @@ void MeasurementEditor::onUpdateTrigger() {
     return;
   }
 
-  currentMeasurement->triggerOnExecute = triggerAddress->isChecked();
-  currentMeasurement->triggerAddress = hex(addressValue->text().toUtf8().data());
-  currentMeasurement->triggerOnCalculation = triggerOther->isChecked();
-
-  currentMeasurement->triggerMeasurement = NULL;
+  Measurement *other = NULL;
   int32_t otherIndex = otherValue->itemData(otherValue->currentIndex()).toInt();
   if (otherIndex >= 0 && otherIndex < measurements->size()) {
-    currentMeasurement->triggerMeasurement = measurements->get(otherIndex);
+    other = measurements->get(otherIndex);
   }
+
+  currentMeasurement->setTriggerAddress(
+    triggerAddress->isChecked(),
+    hex(addressValue->text().toUtf8().data())
+  );
+
+  currentMeasurement->setTriggerMeasurement(
+    triggerOther->isChecked(),
+    other
+  );
 }
 
 // ------------------------------------------------------------------------
@@ -521,6 +534,15 @@ void MeasurementEditor::onUpdateCalculate() {
   if (opNeq->isChecked()) {
     currentMeasurement->op = Measurement::OP_NOT_EQUAL;
   }
+}
+
+// ------------------------------------------------------------------------
+void MeasurementEditor::trigger() {
+  if (!currentMeasurement) {
+    return;
+  }
+
+  currentMeasurement->trigger();
 }
 
 // ------------------------------------------------------------------------

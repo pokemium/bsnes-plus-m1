@@ -13,7 +13,10 @@ struct MeasurementValue {
   };
 
   enum SpecialVariable {
-    SPECIAL_VCOUNTER
+    SPECIAL_VCOUNTER,
+    SPECIAL_HCOUNTER,
+    SPECIAL_FRAME,
+    SPECIAL_CLOCK
   };
 
   MeasurementValue();
@@ -25,9 +28,14 @@ struct MeasurementValue {
   uint32_t variableAddress;
   uint8_t variableSize;
   bool variableSigned;
-  QString variableSource;
+  SNES::Debugger::MemorySource variableSource;
 
   SpecialVariable specialVariable;
+
+  int32_t calculateVariable();
+  int32_t calculateSpecial();
+  int32_t calculate(Measurement *base);
+  uint8_t readByte(uint32_t addr);
 };
 
 class Measurement : public QObject {
@@ -49,11 +57,15 @@ public:
   };
 
   Measurement();
+  ~Measurement();
 
   QString name;
 
   bool triggerOnExecute;
   uint32_t triggerAddress;
+
+  void setTriggerAddress(bool enabled, uint32_t address);
+  void setTriggerMeasurement(bool enabled, Measurement *measurement);
 
   bool triggerOnCalculation;
   Measurement *triggerMeasurement;
@@ -62,8 +74,17 @@ public:
   Operator op;
   MeasurementValue right;
 
+  int32_t currentValue;
+
 public slots:
   void onRemovedMeasurement(Measurement*);
+  void trigger();
+
+private:
+  bool isInCalculation;
+
+signals:
+  void triggered(uint32_t);
 };
 
 

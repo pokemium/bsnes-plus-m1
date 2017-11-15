@@ -59,6 +59,7 @@ public:
   QLineEdit *addressValue;
   QCheckBox *triggerOther;
   QComboBox *otherValue;
+  QPushButton *triggerNow;
 
   // options
   QVBoxLayout *optionsLayout;
@@ -89,6 +90,7 @@ public slots:
   void onUpdateName();
   void onUpdateCalculate();
   void onUpdateTrigger();
+  void trigger();
 
 protected:
   Measurement *currentMeasurement;

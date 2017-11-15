@@ -20,6 +20,8 @@ void CPUDebugger::op_step() {
   usage[regs.pc] |= UsageOpcode | (regs.p.m << 1) | (regs.p.x << 0);
   opcode_pc = regs.pc;
 
+  debugger.trigger_test(regs.pc);
+
   if(debugger.step_cpu &&
       (debugger.step_type == Debugger::StepType::StepInto ||
        (debugger.step_type >= Debugger::StepType::StepOver && debugger.call_count < 0))) {
@@ -368,6 +370,10 @@ void CPUDebugger::setFlag(unsigned id, bool value) {
     update_table();
     return;
   }
+}
+
+unsigned CPUDebugger::get_clock_count() {
+  return status.clock_count;
 }
 
 #endif
