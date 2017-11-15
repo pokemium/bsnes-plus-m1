@@ -16,6 +16,9 @@ Debugger *debugger;
 #include "disassembler/processor/common_processor.cpp"
 #include "disassembler/processor/cpu_processor.cpp"
 
+#include "profiler/measurements.cpp"
+#include "profiler/measurementeditor.cpp"
+
 #include "registeredit.cpp"
 #include "debuggerview.cpp"
 
@@ -50,6 +53,9 @@ Debugger::Debugger() {
   cgramViewer = new CgramViewer;
   debuggerOptions = new DebuggerOptions;
 
+  measurements = new Measurements;
+  measurementEditor = new MeasurementEditor;
+
   layout = new QVBoxLayout;
   layout->setMargin(Style::WindowMargin);
   layout->setSpacing(Style::WidgetSpacing);
@@ -64,6 +70,7 @@ Debugger::Debugger() {
   menu_tools_breakpoint = menu_tools->addAction("Breakpoint Editor ...");
   menu_tools_memory = menu_tools->addAction("Memory Editor ...");
   menu_tools_propertiesViewer = menu_tools->addAction("Properties Viewer ...");
+  menu_tools_measurements = menu_tools->addAction("Config measurements ...");
 
   menu_ppu = menu->addMenu("S-PPU");
   menu_ppu_vramViewer = menu_ppu->addAction("Video RAM Viewer ...");
@@ -151,6 +158,7 @@ Debugger::Debugger() {
   connect(menu_tools_breakpoint, SIGNAL(triggered()), breakpointEditor, SLOT(show()));
   connect(menu_tools_memory, SIGNAL(triggered()), memoryEditor, SLOT(show()));
   connect(menu_tools_propertiesViewer, SIGNAL(triggered()), propertiesViewer, SLOT(show()));
+  connect(menu_tools_measurements, SIGNAL(triggered()), measurementEditor, SLOT(show()));
 
   connect(menu_ppu_vramViewer, SIGNAL(triggered()), vramViewer, SLOT(show()));
   connect(menu_ppu_tilemapViewer, SIGNAL(triggered()), tilemapViewer, SLOT(show()));
@@ -184,6 +192,8 @@ Debugger::Debugger() {
   QTimer *updateTimer = new QTimer(this);
   connect(updateTimer, SIGNAL(timeout()), this, SLOT(frameTick()));
   updateTimer->start(15);
+
+  measurementEditor->show();
 }
 
 void Debugger::modifySystemState(unsigned state) {

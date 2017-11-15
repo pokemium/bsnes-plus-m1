@@ -48,6 +48,9 @@ using namespace ruby;
   #include "debugger/disassembler/symbolsview.moc.hpp"
   #include "debugger/disassembler/disassemblerview.moc.hpp"
 
+  #include "debugger/profiler/measurements.moc.hpp"
+  #include "debugger/profiler/measurementeditor.moc.hpp"
+
   #include "debugger/tools/breakpoint.moc.hpp"
   #include "debugger/tools/memory.moc.hpp"
   #include "debugger/tools/properties.moc.hpp"

@@ -7,6 +7,7 @@ public:
   QAction *menu_tools_breakpoint;
   QAction *menu_tools_memory;
   QAction *menu_tools_propertiesViewer;
+  QAction *menu_tools_measurements;
   QMenu *menu_ppu;
   QAction *menu_ppu_vramViewer;
   QAction *menu_ppu_tilemapViewer;
