@@ -166,6 +166,30 @@ void FmaSymbolFile::readMeasurement(SymbolMap *map, const lstring &args) const {
 }
 
 // ------------------------------------------------------------------------
+void FmaSymbolFile::readGraphLine(SymbolMap *map, const lstring &args) const {
+  if (args.size() != 3) {
+    return;
+  }
+
+  Graph *graph = graphs->find((const char*)args[1]);
+  if (graph == NULL) {
+    return;
+  }
+
+  graph->addLine((const char*)args[2], hex(args[3]));
+}
+
+// ------------------------------------------------------------------------
+void FmaSymbolFile::readGraph(SymbolMap *map, const lstring &args) const {
+  if (args.size() != 2) {
+    return;
+  }
+
+  Graph *graph = graphs->create();
+  graph->name = (const char*)args[1];
+}
+
+// ------------------------------------------------------------------------
 void FmaSymbolFile::readConfig(SymbolMap *map, const lstring &args) const {
   if (args.size() < 2) {
     return;
@@ -173,6 +197,10 @@ void FmaSymbolFile::readConfig(SymbolMap *map, const lstring &args) const {
 
   if (args[0] == "MEASUREMENT") {
     readMeasurement(map, args);
+  } else if (args[0] == "GRAPH") {
+    readGraph(map, args);
+  } else if (args[0] == "GRAPH_LINE") {
+    readGraphLine(map, args);
   }
 }
 

@@ -17,6 +17,7 @@ Debugger *debugger;
 #include "disassembler/processor/cpu_processor.cpp"
 
 #include "profiler/measurements.cpp"
+#include "profiler/graphs.cpp"
 #include "profiler/graphview.cpp"
 #include "profiler/measurementeditor.cpp"
 
@@ -54,6 +55,7 @@ Debugger::Debugger() {
   cgramViewer = new CgramViewer;
   debuggerOptions = new DebuggerOptions;
 
+  graphs = new Graphs;
   measurements = new Measurements;
   measurementEditor = new MeasurementEditor;
 
