@@ -442,7 +442,13 @@ void MeasurementEditor::select(Measurement *measurement) {
   triggerAddress->setCheckState(measurement->triggerOnExecute ? Qt::Checked : Qt::Unchecked);
   addressValue->setText(hex<6,'0'>(measurement->triggerAddress));
   triggerOther->setCheckState(measurement->triggerOnCalculation ? Qt::Checked : Qt::Unchecked);
-  // otherValue
+
+  int32_t other = measurements->indexOf(measurement->triggerMeasurement);
+  if (other == -1) {
+    otherValue->setCurrentIndex(0);
+  } else {
+    otherValue->setCurrentIndex(otherValue->findData(QVariant(other)));
+  }
 
   switch(measurement->op) {
     case Measurement::OP_ADD: opAdd->setChecked(true); break;

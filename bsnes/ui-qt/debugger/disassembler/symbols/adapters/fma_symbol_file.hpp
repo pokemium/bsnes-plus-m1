@@ -18,6 +18,10 @@ public:
 protected:
   string filteredRow(const string &input) const;
   void readSymbol(SymbolMap *map, const lstring &args) const;
+  void readMeasurementValue(struct MeasurementValue &value, const string &arg) const;
+  void readMeasurementOperator(class Measurement *value, const string &arg) const;
+  void readMeasurement(SymbolMap *map, const lstring &args) const;
+  void readConfig(SymbolMap *map, const lstring &args) const;
   void readComment(SymbolMap *map, const lstring &args) const;
   void readCommand(SymbolMap *map, const lstring &args) const;
 

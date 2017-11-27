@@ -18,6 +18,8 @@ uint32_t FmaSymbolFile::getFeatures() const {
     | SymbolFileInterface::Symbols
     | SymbolFileInterface::Comments
     | SymbolFileInterface::DebugInterface
+    | SymbolFileInterface::Graphs
+    | SymbolFileInterface::Measurements
   ;
 }
 
@@ -55,6 +57,9 @@ string FmaSymbolFile::filteredRow(const string &input) const {
 
 // ------------------------------------------------------------------------
 uint32_t FmaSymbolFile::parseAddress(const string &arg) const {
+  if (arg.length() == 6) {
+    return nall::hex(arg);
+  }
   if (arg.length() != 7 || arg[2] != ':') {
     return 0;
   }
@@ -99,6 +104,79 @@ void FmaSymbolFile::readComment(SymbolMap *map, const lstring &args) const {
 }
 
 // ------------------------------------------------------------------------
+void FmaSymbolFile::readMeasurementValue(MeasurementValue &value, const string &arg) const {
+  if (arg == "@VCOUNTER") {
+    value.type = MeasurementValue::MEASURE_SPECIAL;
+    value.specialVariable = MeasurementValue::SPECIAL_VCOUNTER;
+    return;
+  }
+
+  Measurement *other = measurements->find(arg);
+  if (other != NULL) {
+    value.type = MeasurementValue::MEASURE_FROM_OTHER;
+    value.other = other;
+    return;
+  }
+
+  value.type = MeasurementValue::MEASURE_CONSTANT;
+  value.constant = nall::hex(arg);
+}
+
+// ------------------------------------------------------------------------
+void FmaSymbolFile::readMeasurementOperator(Measurement *value, const string &arg) const {
+  if (arg == "add") value->op = Measurement::OP_ADD;
+  else if (arg == "sub") value->op = Measurement::OP_SUB;
+  else if (arg == "mul") value->op = Measurement::OP_MUL;
+  else if (arg == "div") value->op = Measurement::OP_DIV;
+  else if (arg == "mod") value->op = Measurement::OP_MOD;
+  else if (arg == "and") value->op = Measurement::OP_AND;
+  else if (arg == "or") value->op = Measurement::OP_OR;
+  else if (arg == "shift_left") value->op = Measurement::OP_SHIFT_LEFT;
+  else if (arg == "shift_right") value->op = Measurement::OP_SHIFT_RIGHT;
+  else if (arg == "equal") value->op = Measurement::OP_EQUAL;
+  else if (arg == "not_equal") value->op = Measurement::OP_NOT_EQUAL;
+}
+
+// ------------------------------------------------------------------------
+void FmaSymbolFile::readMeasurement(SymbolMap *map, const lstring &args) const {
+  uint32_t argOffset = 0;
+  Measurement *measurement = measurements->create();
+
+  for (uint32_t i=1; i<args.size(); i++) {
+    const string &arg = args[i];
+
+    if (arg == "ON_EXECUTE" && i + 1 < args.size()) {
+      measurement->setTriggerAddress(true, parseAddress(args[++i]));
+    } else if (arg == "ON_TRIGGER" && i + 1 < args.size()) {
+      Measurement *other = measurements->find(args[++i]);
+      if (other != NULL) {
+        measurement->setTriggerMeasurement(true, other);
+      }
+    } else {
+
+      switch (argOffset++) {
+      case 0: measurement->name = QString((const char*)arg); break;
+      case 1: readMeasurementValue(measurement->left, arg); break;
+      case 2: readMeasurementOperator(measurement, arg); break;
+      case 3: readMeasurementValue(measurement->right, arg); break;
+      }
+
+    }
+  }
+}
+
+// ------------------------------------------------------------------------
+void FmaSymbolFile::readConfig(SymbolMap *map, const lstring &args) const {
+  if (args.size() < 2) {
+    return;
+  }
+
+  if (args[0] == "MEASUREMENT") {
+    readMeasurement(map, args);
+  }
+}
+
+// ------------------------------------------------------------------------
 void FmaSymbolFile::readSymbol(SymbolMap *map, const lstring &args) const {
   if (args.size() < 4) {
     return;
@@ -120,6 +198,7 @@ bool FmaSymbolFile::read(const nall::lstring &rows, SymbolMap *map) const {
     SECTION_FILE,
     SECTION_SOURCEMAP,
     SECTION_COMMENT,
+    SECTION_CONFIG,
     SECTION_COMMAND
   };
 
@@ -137,6 +216,7 @@ bool FmaSymbolFile::read(const nall::lstring &rows, SymbolMap *map) const {
       if (row == "[SYMBOL]") { section = SECTION_SYMBOL; }
       else if (row == "[COMMENT]") { section = SECTION_COMMENT; }
       else if (row == "[COMMAND]") { section = SECTION_COMMAND; }
+      else if (row == "[CONFIG]") { section = SECTION_CONFIG; }
       else if (row == "[FILE]") { section = SECTION_FILE; }
       else if (row == "[SOURCEMAP]") { section = SECTION_SOURCEMAP; }
       else { section = SECTION_UNKNOWN; }
@@ -152,6 +232,10 @@ bool FmaSymbolFile::read(const nall::lstring &rows, SymbolMap *map) const {
 
     case SECTION_COMMENT:
       readComment(map, args);
+      break;
+
+    case SECTION_CONFIG:
+      readConfig(map, args);
       break;
 
     case SECTION_COMMAND:
