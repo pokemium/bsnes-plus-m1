@@ -11,7 +11,7 @@ public:
   QLineEdit *addr;
   QCheckBox *autoUpdateBox;
   QPushButton *refreshButton;
-  
+
   QHBoxLayout *toolLayout;
   QToolButton *prevCodeButton;
   QToolButton *nextCodeButton;
@@ -19,11 +19,11 @@ public:
   QToolButton *nextDataButton;
   QToolButton *prevUnkButton;
   QToolButton *nextUnkButton;
-  
+
   QToolButton *findButton;
   QToolButton *findNextButton;
   QToolButton *findPrevButton;
-  
+
   QWidget *spacer;
   QPushButton *exportButton;
   QPushButton *importButton;
@@ -39,7 +39,9 @@ public:
   uint8_t usage(unsigned addr);
 
   MemoryEditor();
-  
+
+  void closeEvent(QCloseEvent*);
+
 private:
   QByteArray searchStr;
   int searchPos;
@@ -50,7 +52,7 @@ public slots:
   void refresh();
   void updateOffset();
   void showAddress(qint64);
-  
+
   void prevCode();
   void nextCode();
   void prevData();
@@ -59,15 +61,16 @@ public slots:
   void nextUnknown();
   void gotoPrevious(int);
   void gotoNext(int);
-  
+
   void search();
   void searchNext();
   void searchPrev();
-  
+
   void exportMemory();
   void importMemory();
   void exportMemory(SNES::Memory&, const string&) const;
   void importMemory(SNES::Memory&, const string&) const;
 };
 
-extern MemoryEditor *memoryEditor;
+//extern MemoryEditor *memoryEditor;
+extern QVector <MemoryEditor*> memoryEditors;
