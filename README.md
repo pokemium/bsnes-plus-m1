@@ -23,6 +23,7 @@ For further details about bnes-plus, see the [original repository](https://githu
 - Look ahead of first-time-disassembled code
 - Add symbols from disassembler (right click on line)
 - Displays simple recognized loops
+- Open more than one memory editor at once to compare multiple locations
 - Follow JMP and BRA addresses by clicking on them
 
 

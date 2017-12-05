@@ -47,7 +47,6 @@ Debugger::Debugger() {
 
   tracer = new Tracer;
   breakpointEditor = new BreakpointEditor;
-  memoryEditor = new MemoryEditor;
   propertiesViewer = new PropertiesViewer;
   vramViewer = new VramViewer;
   tilemapViewer = new TilemapViewer;
@@ -159,7 +158,7 @@ Debugger::Debugger() {
   toolBar->addWidget(traceMask);
 
   connect(menu_tools_breakpoint, SIGNAL(triggered()), breakpointEditor, SLOT(show()));
-  connect(menu_tools_memory, SIGNAL(triggered()), memoryEditor, SLOT(show()));
+  connect(menu_tools_memory, SIGNAL(triggered()), this, SLOT(createMemoryEditor()));
   connect(menu_tools_propertiesViewer, SIGNAL(triggered()), propertiesViewer, SLOT(show()));
   connect(menu_tools_measurements, SIGNAL(triggered()), measurementEditor, SLOT(show()));
 
@@ -195,6 +194,11 @@ Debugger::Debugger() {
   QTimer *updateTimer = new QTimer(this);
   connect(updateTimer, SIGNAL(timeout()), this, SLOT(frameTick()));
   updateTimer->start(15);
+}
+
+void Debugger::createMemoryEditor() {
+  MemoryEditor *editor = new MemoryEditor();
+  editor->show();
 }
 
 void Debugger::modifySystemState(unsigned state) {
@@ -305,7 +309,10 @@ void Debugger::synchronize() {
     registerEditSFX->setEnabled(false);
   }
 
-  memoryEditor->synchronize();
+  QVectorIterator<MemoryEditor*> i(memoryEditors);
+  while (i.hasNext()) {
+    i.next()->synchronize();
+  }
 }
 
 void Debugger::echo(const char *message) {
@@ -490,14 +497,20 @@ void Debugger::frameTick() {
   } else {
     // update memory editor every time since once per second isn't very useful
     // (TODO: and PPU viewers, maybe?)
-    memoryEditor->autoUpdate();
+    QVectorIterator<MemoryEditor*> i(memoryEditors);
+    while (i.hasNext()) {
+      i.next()->autoUpdate();
+    }
   }
 
   frameCounter = frame;
 }
 
 void Debugger::autoUpdate() {
-  memoryEditor->autoUpdate();
+  QVectorIterator<MemoryEditor*> i(memoryEditors);
+  while (i.hasNext()) {
+    i.next()->synchronize();
+  }
   propertiesViewer->autoUpdate();
   vramViewer->autoUpdate();
   tilemapViewer->autoUpdate();
