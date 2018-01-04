@@ -89,6 +89,7 @@ public:
     QAction *tools_cheatFinder;
     QAction *tools_stateManager;
     QAction *tools_effectToggle;
+    QAction *tools_manifestViewer;
     QAction *tools_soundViewer;
     QAction *tools_debugger;
 #if defined(PLATFORM_OSX)
@@ -170,6 +171,7 @@ public slots:
   void showCheatFinder();
   void showStateManager();
   void showEffectToggle();
+  void showManifestViewer();
   void showSoundViewer();
   void showDebugger();
   void showDocumentation();

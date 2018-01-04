@@ -185,8 +185,11 @@ MainWindow::MainWindow() {
   tools_stateManager = tools->addAction("&State Manager ...");
 
   tools_effectToggle = tools->addAction("Effect &Toggle ...");
-  if(!SNES::PPU::SupportsLayerEnable && !SNES::DSP::SupportsChannelEnable)
+  if(!SNES::PPU::SupportsLayerEnable && !SNES::DSP::SupportsChannelEnable) {
     tools_effectToggle->setVisible(false);
+  }
+
+  tools_manifestViewer = tools->addAction("&Manifest Viewer ...");
 
   tools_soundViewer = tools->addAction("Sound &Viewer ...");
 
@@ -206,6 +209,7 @@ MainWindow::MainWindow() {
   { QAction *debug_action = debugger_menu->addAction("Disassembler"); debug_action->setData(Debugger::MenuAction::DisassemblerWindow); }
   { QAction *debug_action = debugger_menu->addAction("Memory Editor"); debug_action->setData(Debugger::MenuAction::MemoryWindow); }
   { QAction *debug_action = debugger_menu->addAction("Properties"); debug_action->setData(Debugger::MenuAction::PropertiesWindow); }
+  // TODO! Add measurements
   debugger_menu->addSeparator();
 
   { QAction *debug_action = debugger_menu->addAction("Tile Viewer"); debug_action->setData(Debugger::MenuAction::TileWindow); }
@@ -330,6 +334,7 @@ MainWindow::MainWindow() {
   connect(tools_cheatFinder, SIGNAL(triggered()), this, SLOT(showCheatFinder()));
   connect(tools_stateManager, SIGNAL(triggered()), this, SLOT(showStateManager()));
   connect(tools_effectToggle, SIGNAL(triggered()), this, SLOT(showEffectToggle()));
+  connect(tools_manifestViewer, SIGNAL(triggered()), this, SLOT(showManifestViewer()));
   connect(tools_soundViewer, SIGNAL(triggered()), this, SLOT(showSoundViewer()));
   #if defined(DEBUGGER)
     #if !defined(PLATFORM_OSX)
@@ -640,10 +645,11 @@ void MainWindow::saveState() {
   state.save(slot);
 }
 
-void MainWindow::showCheatEditor()  { toolsWindow->tab->setCurrentIndex(0); toolsWindow->show(); }
-void MainWindow::showCheatFinder()  { toolsWindow->tab->setCurrentIndex(1); toolsWindow->show(); }
-void MainWindow::showStateManager() { toolsWindow->tab->setCurrentIndex(2); toolsWindow->show(); }
-void MainWindow::showEffectToggle() { toolsWindow->tab->setCurrentIndex(3); toolsWindow->show(); }
+void MainWindow::showCheatEditor()    { toolsWindow->tab->setCurrentIndex(0); toolsWindow->show(); }
+void MainWindow::showCheatFinder()    { toolsWindow->tab->setCurrentIndex(1); toolsWindow->show(); }
+void MainWindow::showStateManager()   { toolsWindow->tab->setCurrentIndex(2); toolsWindow->show(); }
+void MainWindow::showEffectToggle()   { toolsWindow->tab->setCurrentIndex(3); toolsWindow->show(); }
+void MainWindow::showManifestViewer() { toolsWindow->tab->setCurrentIndex(4); toolsWindow->show(); }
 
 void MainWindow::showSoundViewer()  { soundViewerWindow->show(); }
 
