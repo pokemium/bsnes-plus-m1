@@ -6,7 +6,7 @@
 class CPUDebugger : public CPU, public ChipDebugger {
 public:
   bool property(unsigned id, string &name, string &value);
-  
+
   enum Register {
     RegisterPC,
     RegisterA,
@@ -19,7 +19,7 @@ public:
   };
   unsigned getRegister(unsigned id);
   void     setRegister(unsigned id, unsigned value);
-  
+
   enum {
     FlagE,
     FlagN,
@@ -33,7 +33,7 @@ public:
   };
   bool     getFlag(unsigned id);
   void     setFlag(unsigned id, bool value);
-    
+
   function<void ()> step_event;
 
   enum Usage {
@@ -41,21 +41,23 @@ public:
     UsageWrite  = 0x40,
     UsageExec   = 0x20,
     UsageOpcode = 0x10,
+    UsageFlagE  = 0x04,
     UsageFlagM  = 0x02,
     UsageFlagX  = 0x01,
   };
   uint8 *usage;
   uint8 *cart_usage;
+
 #if defined(ALT_CPU_HPP)
   uint8 mmio_read(unsigned addr);
   void mmio_write(unsigned addr, uint8 data);
-  
+
   uint32 opcode_pc;
 
 #else
   uint8 mmio_r2180();
   void mmio_w2180(uint8 data);
-  
+
   uint24 opcode_pc;  //points to the current opcode, used to backtrace on read/write breakpoints
 
 #endif
@@ -68,6 +70,7 @@ public:
   void op_write(uint32 addr, uint8 data);
 
   uint8 disassembler_read(uint32 addr);
+  unsigned get_clock_count();
 
   CPUDebugger();
   ~CPUDebugger();

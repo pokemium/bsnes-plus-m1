@@ -17,10 +17,10 @@ class Debugger : public Window {
 public:
   QMenuBar *menu;
   QMenu *menu_tools;
-  QAction *menu_tools_disassembler;
   QAction *menu_tools_breakpoint;
   QAction *menu_tools_memory;
   QAction *menu_tools_propertiesViewer;
+  QAction *menu_tools_measurements;
   QMenu *menu_ppu;
   QAction *menu_ppu_tileViewer;
   QAction *menu_ppu_tilemapViewer;
@@ -30,24 +30,15 @@ public:
   QAction *menu_misc_clear;
   QAction *menu_misc_options;
 
-  QHBoxLayout *layout;
+  QVBoxLayout *layout;
+  QSplitter *consoleLayout;
   QWebEngineView *console;
-  QVBoxLayout *consoleLayout;
-  QVBoxLayout *controlLayout;
-  QHBoxLayout *commandLayout;
+  QToolBar *toolBar;
   QToolButton *runBreak;
   QToolButton *stepInstruction;
   QToolButton *stepOver;
   QToolButton *stepOut;
-  QCheckBox *stepCPU;
-  QCheckBox *stepSMP;
-  QCheckBox *stepSA1;
-  QCheckBox *stepSFX;
-  QCheckBox *traceCPU;
-  QCheckBox *traceSMP;
-  QCheckBox *traceSA1;
-  QCheckBox *traceSFX;
-  QCheckBox *traceMask;
+  QToolButton *traceMask;
 
   QCheckBox *logDMA;
   QGroupBox *logDMA_group;
@@ -57,6 +48,14 @@ public:
   QCheckBox *logDMA_other;
 
   QWidget *spacer;
+
+  class DebuggerView *debugCPU;
+  class DebuggerView *debugSFX;
+  class DebuggerView *debugSA1;
+  class DebuggerView *debugSMP;
+
+  class SymbolMap *symbolsCPU;
+  class SymbolMap *symbolsSA1;
 
   void paintEvent(QPaintEvent*);
   void modifySystemState(unsigned);
@@ -92,7 +91,7 @@ public slots:
   void stepAction();
   void stepOverAction();
   void stepOutAction();
-
+  void createMemoryEditor();
   void setLogDMAState(int);
 
 private:

@@ -8,7 +8,7 @@ uint8 CPU::mmio_r2180() {
   uint8 r = bus.read(0x7e0000 | status.wram_addr);
   if(!Memory::debugger_access())
     status.wram_addr++;
-  
+
   return r;
 }
 
@@ -464,7 +464,6 @@ uint8 CPU::mmio_read(unsigned addr) {
 }
 
 void CPU::mmio_write(unsigned addr, uint8 data) {
-
   //DMA
   if((addr & 0xff80) == 0x4300) {  //$4300-$437f
     unsigned i = (addr >> 4) & 7;
@@ -509,6 +508,16 @@ void CPU::mmio_write(unsigned addr, uint8 data) {
     case 0x420b: mmio_w420b(data); return;
     case 0x420c: mmio_w420c(data); return;
     case 0x420d: mmio_w420d(data); return;
+
+#ifdef DEBUGGER
+    case 0x420e:
+    case 0x420f: {
+      if (debugger.enable_debug_interface) {
+        debugger.writeDebugPort(addr, data);
+        return;
+      }
+    }
+#endif
   }
 }
 

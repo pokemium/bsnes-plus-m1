@@ -2,8 +2,45 @@
 
 Debugger debugger;
 
+void Debugger::add_trigger(unsigned addr, void *data) {
+  remove_trigger(addr, data);
+
+  triggers.append(Trigger(addr, data));
+}
+
+void Debugger::remove_trigger(unsigned addr, void *data) {
+  unsigned count = triggers.size();
+  for (unsigned i=0; i<count; i++) {
+    const Trigger &trigger = triggers[i];
+
+    if (trigger.addr == addr && trigger.data == data) {
+      triggers.remove(i);
+      return;
+    }
+  }
+}
+
+void Debugger::trigger_test(unsigned addr) {
+  if (!trigger_function) {
+    return;
+  }
+
+  unsigned numTriggers = triggers.size();
+  unsigned i;
+
+  for(i = 0; i < numTriggers; i++) {
+    const Trigger &trigger = triggers[i];
+
+    if (trigger.addr == addr) {
+      trigger_function(trigger.data);
+    }
+  }
+}
+
 void Debugger::breakpoint_test(Debugger::Breakpoint::Source source, Debugger::Breakpoint::Mode mode, unsigned addr, uint8 data) {
-  for(unsigned i = 0; i < Breakpoints; i++) {
+  unsigned i;
+
+  for(i = 0; i < Breakpoints; i++) {
     if(breakpoint[i].enabled == false) continue;
 
     if(breakpoint[i].data != -1 && breakpoint[i].data != data) continue;
@@ -152,6 +189,18 @@ void Debugger::logv(const char *format, const char *color, ...) {
   log(str, color);
 }
 
+void Debugger::writeDebugPort(uint32 addr, uint8 data) {
+  if (addr == 0x420e) {
+    debugPort = data;
+  } else {
+    debugPort = (debugPort & 0xFF) | (data << 8);
+
+    if (debug_port_event) {
+      debug_port_event(debugPort);
+    }
+  }
+}
+
 Debugger::Debugger() {
   break_event = BreakEvent::None;
 
@@ -171,6 +220,8 @@ Debugger::Debugger() {
   step_sfx = false;
   bus_access = false;
   break_on_wdm = false;
+  break_on_brk = false;
+  enable_debug_interface = false;
 
   step_type = StepType::None;
 }

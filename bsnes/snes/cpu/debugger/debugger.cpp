@@ -20,6 +20,8 @@ void CPUDebugger::op_step() {
   opcode_pc = regs.pc;
   uint8 opcode = disassembler_read(opcode_pc);
 
+  debugger.trigger_test(regs.pc);
+
   if(debugger.step_cpu &&
       (debugger.step_type == Debugger::StepType::StepInto ||
        (debugger.step_type >= Debugger::StepType::StepOver && debugger.call_count < 0))) {
@@ -29,8 +31,8 @@ void CPUDebugger::op_step() {
     scheduler.exit(Scheduler::ExitReason::DebuggerEvent);
   } else {
 
-    if (debugger.break_on_wdm) {
-      if (opcode == 0x42) {
+    if (debugger.break_on_wdm || debugger.break_on_brk) {
+      if ((opcode == 0x42 && debugger.break_on_wdm) || (opcode == 0x00 && debugger.break_on_brk)) {
         debugger.breakpoint_hit = Debugger::SoftBreakCPU;
         debugger.break_event = Debugger::BreakEvent::BreakpointHit;
         scheduler.exit(Scheduler::ExitReason::DebuggerEvent);
@@ -470,6 +472,10 @@ void CPUDebugger::setFlag(unsigned id, bool value) {
     update_table();
     return;
   }
+}
+
+unsigned CPUDebugger::get_clock_count() {
+  return status.clock_count;
 }
 
 #endif

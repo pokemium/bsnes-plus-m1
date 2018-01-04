@@ -223,6 +223,16 @@ void CPU::mmio_write(unsigned addr, uint8 data) {
       status.rom_speed = data & 1 ? 6 : 8;
       return;
     }
+
+#ifdef DEBUGGER
+    case 0x420e:
+    case 0x420f: {
+      if (debugger.enable_debug_interface) {
+        debugger.writeDebugPort(addr, data);
+        return;
+      }
+    }
+#endif
   }
 
   if((addr & 0xff80) == 0x4300) {

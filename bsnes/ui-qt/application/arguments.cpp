@@ -32,6 +32,28 @@ bool Application::parseArgumentSwitch(const string& arg, const string& parameter
   #if defined(DEBUGGER)
   if(arg == "--show-debugger") { debugger->show(); return false; }
 
+  if(arg == "--break-immediately") {
+    application.debug = true;
+    application.debugrun = false;
+    debugger->synchronize();
+    return false;
+  }
+
+  if(arg == "--break-on-wdm") {
+    breakpointEditor->setBreakOnWDM(true);
+    return false;
+  }
+
+  if(arg == "--break-on-brk") {
+    breakpointEditor->setBreakOnBrk(true);
+    return false;
+  }
+
+  if(arg == "--enable-debug-interface") {
+    SNES::debugger.enable_debug_interface = true;
+    return false;
+  }
+
   if(arg == "--breakpoint" || arg == "-b") {
     if(parameter == "" || parameter[0] == '-') return false;
 
@@ -40,7 +62,6 @@ bool Application::parseArgumentSwitch(const string& arg, const string& parameter
     return true;
   }
 
-  if(arg == "--break-on-wdm") { breakpointEditor->setBreakOnWDM(true); return false; }
   #endif
 
   return false;
@@ -53,7 +74,10 @@ void Application::printArguments() {
   puts("  -h / --help                       show help");
   #if defined(DEBUGGER)
   puts("  --show-debugger                   open debugger window on startup\n"
-       "  --break-on-wdm                    break on wdm opcode\n"
+       "  --break-immediately               break when loading the cartridge\n"
+       "  --break-on-wdm                    break on WDM opcode\n"
+       "  --break-on-brk                    break on BRK opcode\n"
+       "  --enable-debug-interface          enables the debug port at $420E/$420F\n"
        "  -b / --breakpoint <breakpoint>    add breakpoint\n"
        "\n"
        "Breakpoint format: <addr>[-<addr end>][=<value>][:<rwx>[:<source>]]\n"

@@ -1,7 +1,7 @@
 class SA1Debugger : public SA1, public ChipDebugger {
 public:
   bool property(unsigned id, string &name, string &value);
-  
+
   enum {
     RegisterPC,
     RegisterA,
@@ -14,7 +14,7 @@ public:
   };
   unsigned getRegister(unsigned id);
   void     setRegister(unsigned id, unsigned value);
-  
+
   enum {
     FlagE,
     FlagN,
@@ -28,7 +28,7 @@ public:
   };
   bool     getFlag(unsigned id);
   void     setFlag(unsigned id, bool value);
-  
+
   function<void ()> step_event;
 
   enum Usage {
@@ -50,7 +50,7 @@ public:
   void op_write(uint32 addr, uint8 data);
 
   uint8 disassembler_read(uint32 addr);
-  
+
   SA1Debugger();
   ~SA1Debugger();
 };

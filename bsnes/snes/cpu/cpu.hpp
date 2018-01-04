@@ -126,6 +126,9 @@ private:
 #if defined(DEBUGGER)
   #include "debugger/debugger.hpp"
   extern CPUDebugger cpu;
+
+  #include "debugger/analyst.hpp"
+  extern CPUAnalyst cpuAnalyst;
 #else
   extern CPU cpu;
 #endif
