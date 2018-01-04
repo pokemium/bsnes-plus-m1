@@ -98,7 +98,6 @@ public:
     string memoryEditor;
     string propertiesViewer;
     string layerToggle;
-    //string vramViewer;
     string tileViewer;
     string tilemapViewer;
     string oamViewer;
