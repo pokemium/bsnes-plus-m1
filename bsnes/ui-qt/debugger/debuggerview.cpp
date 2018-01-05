@@ -8,7 +8,7 @@ DebuggerView::DebuggerView(RegisterEdit *registers, DisasmProcessor *processor, 
 
   layout = new QHBoxLayout;
   layout->setMargin(Style::WindowMargin);
-  layout->setSpacing(Style::WidgetSpacing);
+  layout->setSpacing(Style::TightWidgetSpacing);
   setLayout(layout);
 
   consoleLayout = new QSplitter(Qt::Vertical);

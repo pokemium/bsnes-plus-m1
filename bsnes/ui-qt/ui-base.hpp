@@ -108,9 +108,14 @@ struct Style {
   static int MonospaceSize;
 
   enum {
-    WindowMargin     = 5,
-    WidgetSpacing    = 5,
-    SeparatorSpacing = 5,
+    WindowMargin       = 5,
+    WidgetSpacing      = 5,
+    #if defined(PLATFORM_OSX)
+    TightWidgetSpacing = 2,
+    #else
+    TightWidgetSpacing = 5,
+    #endif
+    SeparatorSpacing   = 5,
   };
 };
 

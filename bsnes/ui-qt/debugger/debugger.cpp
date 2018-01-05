@@ -125,7 +125,7 @@ Debugger::Debugger() {
   layout->addWidget(mainLayout);
 
   symbolsCPU = new SymbolMap();
-  symbolsCPU->loadFromString(DEFAULT_SYMBOL_MAP_CPU);
+  //symbolsCPU->loadFromString(DEFAULT_SYMBOL_MAP_CPU);
 
   symbolsSA1 = new SymbolMap();
 
@@ -138,7 +138,7 @@ Debugger::Debugger() {
   editTabs->addTab(debugCPU, "CPU");
   editTabs->addTab(debugSMP, "SMP");
   editTabs->addTab(debugSA1, "SA-1");
-  editTabs->addTab(debugSFX, "SuperFX");
+  editTabs->addTab(debugSFX, "GSU-1");
   editTabs->setTabPosition(QTabWidget::North);
   editTabs->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   mainLayout->addWidget(editTabs);
@@ -146,7 +146,7 @@ Debugger::Debugger() {
   QWidget *consolePaneWidget = new QWidget;
   QHBoxLayout *consolePane = new QHBoxLayout;
   consolePane->setMargin(0);
-  consolePane->setSpacing(Style::WidgetSpacing);
+  consolePane->setSpacing(Style::TightWidgetSpacing);
   consolePaneWidget->setLayout(consolePane);
   console = new QWebEngineView;
   console->setHtml(QString(consoleHtmlContent));
@@ -154,9 +154,8 @@ Debugger::Debugger() {
 
   QWidget *consoleExtrasWidget = new QWidget;
   QVBoxLayout *consoleExtras = new QVBoxLayout;
-  consoleExtras->setSpacing(Style::WidgetSpacing);
+  consoleExtras->setSpacing(Style::TightWidgetSpacing);
   consoleExtrasWidget->setLayout(consoleExtras);
-  consoleExtras->setSpacing(Style::WidgetSpacing);
   consolePane->addWidget(consoleExtrasWidget);
   mainLayout->addWidget(consolePaneWidget);
 
@@ -200,7 +199,7 @@ Debugger::Debugger() {
   toolBar->addWidget(traceMask);
 
 
-  logDMA = new QCheckBox("Log DMA transfers");
+  logDMA = new QCheckBox("Log DMA");
   consoleExtras->addWidget(logDMA);
   logDMA_group = new QGroupBox();
   QVBoxLayout *dmaGroupBoxLayout = new QVBoxLayout;
@@ -210,7 +209,7 @@ Debugger::Debugger() {
   logDMA_oam = new QCheckBox("OAM");
   logDMA_cgram = new QCheckBox("CGRAM");
   logDMA_other = new QCheckBox("Other");
-  dmaGroupBoxLayout->setSpacing(0);
+  dmaGroupBoxLayout->setSpacing(Style::TightWidgetSpacing);
   dmaGroupBoxLayout->addWidget(logDMA_vram);
   dmaGroupBoxLayout->addWidget(logDMA_oam);
   dmaGroupBoxLayout->addWidget(logDMA_cgram);

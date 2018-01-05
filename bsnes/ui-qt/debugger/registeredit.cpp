@@ -49,10 +49,11 @@ RegisterEditSFX *registerEditSFX;
 
 void RegisterEditCPU::setupUI() {
 	QVBoxLayout *fullLayout = new QVBoxLayout;
-	fullLayout->setSpacing(Style::WidgetSpacing);
+	fullLayout->setSpacing(Style::TightWidgetSpacing);
 	this->setLayout(fullLayout);
 
 	QGridLayout *layout = new QGridLayout;
+	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	reg_editor(pc, 6);
 	reg_editor(a, 4);
 	reg_editor(x, 4);
@@ -63,7 +64,10 @@ void RegisterEditCPU::setupUI() {
 	reg_editor(p, 2);
 	fullLayout->addLayout(layout);
 
+	fullLayout->addSpacing(Style::WidgetSpacing);
+
 	layout = new QGridLayout;
+	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	for (int i = 0; i < 9; i++) {
 		flag_editor(i["ENVMXDIZC"], i, (i >> 1), i & 1);
 	}
@@ -116,10 +120,11 @@ void RegisterEditCPU::synchronize() {
 
 void RegisterEditSMP::setupUI() {
 	QVBoxLayout *fullLayout = new QVBoxLayout;
-	fullLayout->setSpacing(Style::WidgetSpacing);
+	fullLayout->setSpacing(Style::TightWidgetSpacing);
 	this->setLayout(fullLayout);
 
 	QGridLayout *layout = new QGridLayout;
+	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	reg_editor(pc, 4);
 	reg_editor(a, 2);
 	reg_editor(x, 2);
@@ -129,7 +134,10 @@ void RegisterEditSMP::setupUI() {
 	reg_editor(p, 2);
 	fullLayout->addLayout(layout);
 
+	fullLayout->addSpacing(Style::WidgetSpacing);
+
 	layout = new QGridLayout;
+	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	for (int i = 0; i < 8; i++) {
 		flag_editor(i["NVPBHIZC"], i, i >> 1, i & 1);
 	}
@@ -178,10 +186,11 @@ void RegisterEditSMP::synchronize() {
 
 void RegisterEditSFX::setupUI() {
 	QVBoxLayout *fullLayout = new QVBoxLayout;
-	fullLayout->setSpacing(Style::WidgetSpacing);
+	fullLayout->setSpacing(Style::TightWidgetSpacing);
 	this->setLayout(fullLayout);
 
 	QGridLayout *layout = new QGridLayout;
+	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	for (int reg = 0; reg < 16; reg++) {
 		layout->addWidget(new QLabel(QString("R%1").arg(reg)), reg>>1, (reg&1)<<1);
 		edit_r[reg] = new QLineEdit(this);
@@ -196,7 +205,10 @@ void RegisterEditSFX::setupUI() {
 	reg_editor(sfr, 4);
 	fullLayout->addLayout(layout);
 
+	fullLayout->addSpacing(Style::WidgetSpacing);
+
 	layout = new QGridLayout;
+	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	// TODO: some other registers here (ROMBR, etc)
 	flag_editor("I", 0, 0, 0);
 	flag_editor("B", 1, 0, 1);

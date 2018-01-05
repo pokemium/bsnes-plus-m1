@@ -112,5 +112,7 @@ private:
 
   QColor _addressAreaColor;
   QColor _breakpointColor;
+  QColor _currentAddressColor;
   QColor _selectionColor;
+  QColor _lineColor;
 };

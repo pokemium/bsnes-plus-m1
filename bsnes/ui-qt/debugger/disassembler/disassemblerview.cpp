@@ -7,8 +7,10 @@ DisassemblerView::DisassemblerView(DisasmProcessor *processor) : hasValidAddress
   setContextMenuPolicy(Qt::CustomContextMenu);
 
   _addressAreaColor = this->palette().alternateBase().color();
-  _selectionColor = this->palette().highlight().color();
-  _breakpointColor = QColor(255, 0, 0, 255);
+  _breakpointColor = QColor(238, 91, 48, 255);
+  _currentAddressColor = QColor(238, 91, 48, 95);
+  _selectionColor = QColor(178, 215, 255, 95);
+  _lineColor = QColor(0, 0, 0, 47);
 
   connect(verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(onScroll()));
   connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(showContextMenu(const QPoint &)));
@@ -481,7 +483,7 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
   NO_CLIPPING();
 
   if (line.line.address == currentPcAddress) {
-    painter.fillRect(QRect(0, y - charHeight + lineOffset, viewport()->width(), charHeight), _selectionColor);
+    painter.fillRect(QRect(0, y - charHeight + lineOffset, viewport()->width(), charHeight), _currentAddressColor);
 
     addressColor = viewport()->palette().highlightedText().color();
     textColor = addressColor;
@@ -491,7 +493,7 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
     paramSymbolColor = addressColor;
   } else {
     if (line.line.address == currentAddress) {
-      painter.fillRect(QRect(0, y - charHeight + lineOffset, viewport()->width(), charHeight), _addressAreaColor);
+      painter.fillRect(QRect(0, y - charHeight + lineOffset, viewport()->width(), charHeight), _selectionColor);
     }
 
     addressColor = Qt::gray;
@@ -499,7 +501,7 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
     opColor = QColor(0x00, 0x00, 0x88, 0xff);
     paramImmediateColor = QColor(0x00, 0x88, 0x00, 0xff);
     paramAddressColor = QColor(0x88, 0x00, 0x00, 0xff);
-    paramSymbolColor = QColor(0xFF, 0x00, 0x00, 0xff);
+    paramSymbolColor = QColor(0x00, 0x00, 0xe0, 0xff);
   }
 
   if (breakpointEditor->indexOfBreakpointExec(line.line.address, processor->getBreakpointBusName()) >= 0) {
@@ -511,12 +513,12 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
   Symbol currentRow = symbols ? symbols->getSymbol(line.line.address) : Symbol::createInvalid();
 
   if (line.isReturn()) {
-    painter.setPen(Qt::gray);
+    painter.setPen(_lineColor);
     painter.drawLine(0, y + lineOffset, width(), y + lineOffset);
   }
 
   if (currentRow.type != Symbol::INVALID) {
-    painter.setPen(Qt::gray);
+    painter.setPen(_lineColor);
     painter.drawLine(0, y - charHeight + lineOffset, width(), y - charHeight + lineOffset);
     painter.setPen(paramAddressColor);
     SET_CLIPPING(COLUMN_COMMENT);
@@ -614,7 +616,7 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
                 Symbol sym = symbols->getSymbol(param.address);
 
                 if (sym.type != Symbol::INVALID) {
-                  QString text = QString("<%1>").arg(sym.name);
+                  QString text = QString("%1").arg(sym.name);
                   painter.setPen(paramSymbolColor);
                   painter.drawText(x, y, text);
                   x += text.length() * charWidth;
@@ -686,16 +688,14 @@ int DisassemblerView::renderValue(QPainter &painter, int x, int y, uint8_t type,
 void DisassemblerView::paintHeader(QPainter &painter) {
   painter.fillRect(0, 0, width(), headerHeight, _addressAreaColor);
 
-  painter.setPen(Qt::gray);
+  painter.setPen(_lineColor);
   painter.drawLine(0, headerHeight, width(), headerHeight);
 
-  for (uint8_t i=1; i<NUM_COLUMNS; i++) {
-    painter.drawLine(columnPositions[i], 0, columnPositions[i], headerHeight);
-  }
+  //for (uint8_t i=1; i<NUM_COLUMNS; i++) {
+  //  painter.drawLine(columnPositions[i], 0, columnPositions[i], headerHeight);
+  //}
 
   painter.setPen(Qt::black);
-  SET_CLIPPING(0);
-  painter.drawText(columnPositions[0] + charPadding, headerHeight - charPadding, "PC");
   SET_CLIPPING(1);
   painter.drawText(columnPositions[1] + charPadding, headerHeight - charPadding, "Disassembly");
   SET_CLIPPING(2);
@@ -710,7 +710,8 @@ void DisassemblerView::paintEvent(QPaintEvent *event) {
   painter.fillRect(event->rect(), viewport()->palette().color(QPalette::Base));
   painter.fillRect(QRect(0, 0, columnSizes[COLUMN_ADDRESS], height()), _addressAreaColor);
 
-  painter.setPen(Qt::gray);
+  //painter.setPen(Qt::gray);
+  painter.setPen(_lineColor);
   painter.drawLine(columnPositions[2], event->rect().top(), columnPositions[2], height());
 
   int y = 0;
