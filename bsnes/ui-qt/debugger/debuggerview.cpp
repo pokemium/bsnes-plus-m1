@@ -16,6 +16,7 @@ DebuggerView::DebuggerView(RegisterEdit *registers, DisasmProcessor *processor, 
   layout->addWidget(consoleLayout);
 
   disassembler = new DisassemblerView(processor);
+  disassembler->setMinimumHeight(140);
   disassembler->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   consoleLayout->addWidget(disassembler);
 
