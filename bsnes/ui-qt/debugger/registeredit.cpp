@@ -49,6 +49,7 @@ RegisterEditSFX *registerEditSFX;
 
 void RegisterEditCPU::setupUI() {
 	QVBoxLayout *fullLayout = new QVBoxLayout;
+	fullLayout->setSpacing(Style::WidgetSpacing);
 	this->setLayout(fullLayout);
 
 	QGridLayout *layout = new QGridLayout;
@@ -115,6 +116,7 @@ void RegisterEditCPU::synchronize() {
 
 void RegisterEditSMP::setupUI() {
 	QVBoxLayout *fullLayout = new QVBoxLayout;
+	fullLayout->setSpacing(Style::WidgetSpacing);
 	this->setLayout(fullLayout);
 
 	QGridLayout *layout = new QGridLayout;
@@ -176,6 +178,7 @@ void RegisterEditSMP::synchronize() {
 
 void RegisterEditSFX::setupUI() {
 	QVBoxLayout *fullLayout = new QVBoxLayout;
+	fullLayout->setSpacing(Style::WidgetSpacing);
 	this->setLayout(fullLayout);
 
 	QGridLayout *layout = new QGridLayout;

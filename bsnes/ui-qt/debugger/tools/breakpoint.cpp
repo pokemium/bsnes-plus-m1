@@ -236,7 +236,11 @@ BreakpointEditor::BreakpointEditor() {
   layout = new QVBoxLayout;
   layout->setSizeConstraint(QLayout::SetFixedSize);
   layout->setMargin(Style::WindowMargin);
+  #if defined(PLATFORM_OSX)
+  layout->setSpacing(0);
+  #else
   layout->setSpacing(Style::WidgetSpacing);
+  #endif
   setLayout(layout);
 
   for(unsigned n = 0; n < SNES::Debugger::Breakpoints; n++) {

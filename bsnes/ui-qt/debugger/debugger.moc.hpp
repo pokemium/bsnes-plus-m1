@@ -31,7 +31,7 @@ public:
   QAction *menu_misc_options;
 
   QVBoxLayout *layout;
-  QSplitter *consoleLayout;
+  QSplitter *mainLayout;
   QWebEngineView *console;
   QToolBar *toolBar;
   QToolButton *runBreak;
@@ -46,8 +46,7 @@ public:
   QCheckBox *logDMA_oam;
   QCheckBox *logDMA_cgram;
   QCheckBox *logDMA_other;
-
-  QWidget *spacer;
+  QPushButton *logClearButton;
 
   class DebuggerView *debugCPU;
   class DebuggerView *debugSFX;
@@ -72,6 +71,7 @@ public:
     BreakpointsWindow,
     MemoryWindow,
     PropertiesWindow,
+    MeasurementsWindow,
     TileWindow,
     TilemapWindow,
     OAMWindow,

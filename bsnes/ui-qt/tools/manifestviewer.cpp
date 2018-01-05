@@ -10,10 +10,10 @@ ManifestViewerWindow::ManifestViewerWindow() {
 
 	textEdit = new QPlainTextEdit;
 	textEdit->setReadOnly(true);
-	textEdit->setFont(QFont(Style::Monospace));
+	textEdit->setFont(QFont(Style::Monospace, Style::MonospaceSize));
 	textEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
 	layout->addWidget(textEdit);
-	
+
 	synchronize();
 }
 

@@ -38,12 +38,6 @@ DebuggerView::DebuggerView(RegisterEdit *registers, DisasmProcessor *processor, 
   registers->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   controlLayout->addWidget(registers);
 
-  QFrame *line;
-  line = new QFrame();
-  line->setFrameShape(QFrame::HLine);
-  line->setFrameShadow(QFrame::Sunken);
-  controlLayout->addWidget(line);
-
   stepProcessor = new QCheckBox("Step");
   stepProcessor->setChecked(step);
   controlLayout->addWidget(stepProcessor);

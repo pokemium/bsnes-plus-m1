@@ -80,7 +80,11 @@ Debugger::Debugger() {
   measurementEditor = new MeasurementEditor;
 
   layout = new QVBoxLayout;
+  #if defined(PLATFORM_OSX)
+  layout->setMargin(0);
+  #else
   layout->setMargin(Style::WindowMargin);
+  #endif
   layout->setSpacing(Style::WidgetSpacing);
   setLayout(layout);
 
@@ -113,10 +117,12 @@ Debugger::Debugger() {
   registerEditSFX = new RegisterEditSFX;
 
   QToolBar *toolBar = new QToolBar;
+  toolBar->setIconSize(QSize(25, 25));
   layout->addWidget(toolBar);
 
-  consoleLayout = new QSplitter(Qt::Vertical);
-  layout->addWidget(consoleLayout);
+  mainLayout = new QSplitter(Qt::Vertical);
+  mainLayout->setHandleWidth(0);
+  layout->addWidget(mainLayout);
 
   symbolsCPU = new SymbolMap();
   symbolsCPU->loadFromString(DEFAULT_SYMBOL_MAP_CPU);
@@ -135,30 +141,38 @@ Debugger::Debugger() {
   editTabs->addTab(debugSFX, "SuperFX");
   editTabs->setTabPosition(QTabWidget::North);
   editTabs->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-  consoleLayout->addWidget(editTabs);
+  mainLayout->addWidget(editTabs);
 
+  QWidget *consolePaneWidget = new QWidget;
+  QHBoxLayout *consolePane = new QHBoxLayout;
+  consolePane->setMargin(0);
+  consolePane->setSpacing(Style::WidgetSpacing);
+  consolePaneWidget->setLayout(consolePane);
   console = new QWebEngineView;
   console->setHtml(QString(consoleHtmlContent));
-  consoleLayout->addWidget(console);
-  //console = new QTextEdit;
-  //console->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-  //console->setReadOnly(true);
-  //console->setFont(QFont(Style::Monospace));
-  //console->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  //console->setMinimumWidth((98 + 4) * console->fontMetrics().width(' '));
-  //console->setMinimumHeight((6 + 1) * console->fontMetrics().height());
-  //consoleLayout->addWidget(console);
+  consolePane->addWidget(console);
 
+  QWidget *consoleExtrasWidget = new QWidget;
+  QVBoxLayout *consoleExtras = new QVBoxLayout;
+  consoleExtras->setSpacing(Style::WidgetSpacing);
+  consoleExtrasWidget->setLayout(consoleExtras);
+  consoleExtras->setSpacing(Style::WidgetSpacing);
+  consolePane->addWidget(consoleExtrasWidget);
+  mainLayout->addWidget(consolePaneWidget);
+
+
+  const QSize toolButtonSize = QSize(60, 25);
   runBreak = new QToolButton;
   runBreak->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+  runBreak->setFixedSize(toolButtonSize);
   runBreak->setDefaultAction(new QAction(QIcon(":16x16/dbg-break.png"), "Break", this));
-  runBreak->setFixedWidth(runBreak->minimumSizeHint().width());
   runBreak->defaultAction()->setToolTip("Pause/resume execution (F5)");
   runBreak->defaultAction()->setShortcut(Qt::Key_F5);
   toolBar->addWidget(runBreak);
 
   stepInstruction = new QToolButton;
   stepInstruction->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+  stepInstruction->setFixedSize(toolButtonSize);
   stepInstruction->setDefaultAction(new QAction(QIcon(":16x16/dbg-step.png"), "Step", this));
   stepInstruction->defaultAction()->setToolTip("Step through current instruction (F6)");
   stepInstruction->defaultAction()->setShortcut(Qt::Key_F6);
@@ -166,6 +180,7 @@ Debugger::Debugger() {
 
   stepOver = new QToolButton;
   stepOver->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+  stepOver->setFixedSize(toolButtonSize);
   stepOver->setDefaultAction(new QAction(QIcon(":16x16/dbg-step-over.png"), "Over", this));
   stepOver->defaultAction()->setToolTip("Step over current instruction (F7)");
   stepOver->defaultAction()->setShortcut(Qt::Key_F7);
@@ -173,6 +188,7 @@ Debugger::Debugger() {
 
   stepOut = new QToolButton;
   stepOut->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+  stepOut->setFixedSize(toolButtonSize);
   stepOut->setDefaultAction(new QAction(QIcon(":16x16/dbg-step-out.png"), "Out", this));
   stepOut->defaultAction()->setToolTip("Step out of current routine (F8)");
   stepOut->defaultAction()->setShortcut(Qt::Key_F8);
@@ -183,11 +199,9 @@ Debugger::Debugger() {
   traceMask->defaultAction()->setCheckable(true);
   toolBar->addWidget(traceMask);
 
-  /*
-  controlLayout->addSpacing(Style::WidgetSpacing);
 
   logDMA = new QCheckBox("Log DMA transfers");
-  controlLayout->addWidget(logDMA);
+  consoleExtras->addWidget(logDMA);
   logDMA_group = new QGroupBox();
   QVBoxLayout *dmaGroupBoxLayout = new QVBoxLayout;
   logDMA_group->setLayout(dmaGroupBoxLayout);
@@ -201,14 +215,17 @@ Debugger::Debugger() {
   dmaGroupBoxLayout->addWidget(logDMA_oam);
   dmaGroupBoxLayout->addWidget(logDMA_cgram);
   dmaGroupBoxLayout->addWidget(logDMA_other);
-  controlLayout->addWidget(logDMA_group);
+  consoleExtras->addWidget(logDMA_group);
   logDMA_vram->setChecked(true);
   setLogDMAState(0);
 
-  spacer = new QWidget;
-  spacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-  controlLayout->addWidget(spacer);
-  */
+  QWidget *logSpacer = new QWidget;
+  logSpacer->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+  consoleExtras->addWidget(logSpacer);
+
+  logClearButton = new QPushButton("Clear");
+  consoleExtras->addWidget(logClearButton);
+
 
   connect(menu_tools_breakpoint, SIGNAL(triggered()), breakpointEditor, SLOT(show()));
   connect(menu_tools_memory, SIGNAL(triggered()), this, SLOT(createMemoryEditor()));
@@ -240,13 +257,13 @@ Debugger::Debugger() {
   connect(debugSFX, SIGNAL(traceStateChanged(int)), tracer, SLOT(setSfxTraceState(int)));
   connect(traceMask->defaultAction(), SIGNAL(toggled(bool)), tracer, SLOT(setTraceMaskState(bool)));
 
-  /*
   connect(logDMA, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
   connect(logDMA_vram, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
   connect(logDMA_oam, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
   connect(logDMA_cgram, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
   connect(logDMA_other, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
-  */
+  connect(logClearButton, SIGNAL(released()), this, SLOT(clear()));
+
 
   SNES::debugger.logger = { &Debugger::echo, this };
 
@@ -413,6 +430,7 @@ void Debugger::menuAction(MenuAction action) {
     case BreakpointsWindow:   breakpointEditor->show(); break;
     case MemoryWindow:        createMemoryEditor(); break;
     case PropertiesWindow:    propertiesViewer->show(); break;
+    case MeasurementsWindow:  measurementEditor->show(); break;
     case TileWindow:          tileViewer->show(); break;
     case TilemapWindow:       tilemapViewer->show(); break;
     case OAMWindow:           oamViewer->show(); break;

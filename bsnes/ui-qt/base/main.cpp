@@ -209,7 +209,7 @@ MainWindow::MainWindow() {
   { QAction *debug_action = debugger_menu->addAction("Disassembler"); debug_action->setData(Debugger::MenuAction::DisassemblerWindow); }
   { QAction *debug_action = debugger_menu->addAction("Memory Editor"); debug_action->setData(Debugger::MenuAction::MemoryWindow); }
   { QAction *debug_action = debugger_menu->addAction("Properties"); debug_action->setData(Debugger::MenuAction::PropertiesWindow); }
-  // TODO! Add measurements
+  { QAction *debug_action = debugger_menu->addAction("Measurements"); debug_action->setData(Debugger::MenuAction::MeasurementsWindow); }
   debugger_menu->addSeparator();
 
   { QAction *debug_action = debugger_menu->addAction("Tile Viewer"); debug_action->setData(Debugger::MenuAction::TileWindow); }

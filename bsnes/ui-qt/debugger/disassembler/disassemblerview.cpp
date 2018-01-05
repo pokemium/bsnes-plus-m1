@@ -2,7 +2,7 @@
 
 // ------------------------------------------------------------------------
 DisassemblerView::DisassemblerView(DisasmProcessor *processor) : hasValidAddress(false), processor(processor) {
-  setFont(QFont(Style::Monospace));
+  setFont(QFont(Style::Monospace, Style::MonospaceSize));
   setMouseTracking(true);
   setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -543,7 +543,7 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
   if (line.isEndBra()) {
     int l = x - charWidth - charWidth + 1;
     int r = x - charPadding;
-    int w = 4;
+    int w = 2;
     int hw = w >> 1;
     int ap = 2;
     int ar = r + 2;
@@ -556,8 +556,8 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
     path.lineTo(ar, t + hw);
     path.lineTo(al, t + w + ap);
 
-    painter.setPen(Qt::black);
-    painter.setBrush(Qt::black);
+    painter.setPen(QPen(opColor, 0.5, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setBrush(opColor);
     painter.drawEllipse(QPoint(l + hw, b - hw), hw, hw);
     painter.drawEllipse(QPoint(l + hw, t + hw), hw, hw);
     painter.drawRect(l, t + hw, w, b - t - w);
@@ -694,8 +694,10 @@ void DisassemblerView::paintHeader(QPainter &painter) {
   }
 
   painter.setPen(Qt::black);
+  SET_CLIPPING(0);
+  painter.drawText(columnPositions[0] + charPadding, headerHeight - charPadding, "PC");
   SET_CLIPPING(1);
-  painter.drawText(columnPositions[1] + charPadding, headerHeight - charPadding, "Disassemble");
+  painter.drawText(columnPositions[1] + charPadding, headerHeight - charPadding, "Disassembly");
   SET_CLIPPING(2);
   painter.drawText(columnPositions[2] + charPadding, headerHeight - charPadding, "Comment");
   NO_CLIPPING();
