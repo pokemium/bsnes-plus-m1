@@ -69,7 +69,7 @@ void RegisterEditCPU::setupUI() {
 	layout = new QGridLayout;
 	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	for (int i = 0; i < 9; i++) {
-		flag_editor(i["ENVMXDIZC"], i, (i >> 1), i & 1);
+		flag_editor(i["NVMXDIZCE"], i, (i >> 1), i & 1);
 	}
 	fullLayout->addLayout(layout);
 
@@ -86,15 +86,15 @@ void RegisterEditCPU::commit() {
 	reg_commit(db, SNES::CPUDebugger::RegisterDB);
 	reg_commit(p,  SNES::CPUDebugger::RegisterP);
 
-	flag_commit(SNES::CPUDebugger::FlagE, 0);
-	flag_commit(SNES::CPUDebugger::FlagN, 1);
-	flag_commit(SNES::CPUDebugger::FlagV, 2);
-	flag_commit(SNES::CPUDebugger::FlagM, 3);
-	flag_commit(SNES::CPUDebugger::FlagX, 4);
-	flag_commit(SNES::CPUDebugger::FlagD, 5);
-	flag_commit(SNES::CPUDebugger::FlagI, 6);
-	flag_commit(SNES::CPUDebugger::FlagZ, 7);
-	flag_commit(SNES::CPUDebugger::FlagC, 8);
+	flag_commit(SNES::CPUDebugger::FlagN, 0);
+	flag_commit(SNES::CPUDebugger::FlagV, 1);
+	flag_commit(SNES::CPUDebugger::FlagM, 2);
+	flag_commit(SNES::CPUDebugger::FlagX, 3);
+	flag_commit(SNES::CPUDebugger::FlagD, 4);
+	flag_commit(SNES::CPUDebugger::FlagI, 5);
+	flag_commit(SNES::CPUDebugger::FlagZ, 6);
+	flag_commit(SNES::CPUDebugger::FlagC, 7);
+	flag_commit(SNES::CPUDebugger::FlagE, 8);
 }
 
 void RegisterEditCPU::synchronize() {
@@ -107,15 +107,15 @@ void RegisterEditCPU::synchronize() {
 	reg_sync(db, SNES::CPUDebugger::RegisterDB);
 	reg_sync(p,  SNES::CPUDebugger::RegisterP);
 
-	flag_sync(SNES::CPUDebugger::FlagE, 0);
-	flag_sync(SNES::CPUDebugger::FlagN, 1);
-	flag_sync(SNES::CPUDebugger::FlagV, 2);
-	flag_sync(SNES::CPUDebugger::FlagM, 3);
-	flag_sync(SNES::CPUDebugger::FlagX, 4);
-	flag_sync(SNES::CPUDebugger::FlagD, 5);
-	flag_sync(SNES::CPUDebugger::FlagI, 6);
-	flag_sync(SNES::CPUDebugger::FlagZ, 7);
-	flag_sync(SNES::CPUDebugger::FlagC, 8);
+	flag_sync(SNES::CPUDebugger::FlagN, 0);
+	flag_sync(SNES::CPUDebugger::FlagV, 1);
+	flag_sync(SNES::CPUDebugger::FlagM, 2);
+	flag_sync(SNES::CPUDebugger::FlagX, 3);
+	flag_sync(SNES::CPUDebugger::FlagD, 4);
+	flag_sync(SNES::CPUDebugger::FlagI, 5);
+	flag_sync(SNES::CPUDebugger::FlagZ, 6);
+	flag_sync(SNES::CPUDebugger::FlagC, 7);
+	flag_sync(SNES::CPUDebugger::FlagE, 8);
 }
 
 void RegisterEditSMP::setupUI() {
@@ -210,18 +210,19 @@ void RegisterEditSFX::setupUI() {
 	layout = new QGridLayout;
 	layout->setHorizontalSpacing(Style::WidgetSpacing * 2);
 	// TODO: some other registers here (ROMBR, etc)
-	flag_editor("I", 0, 0, 0);
-	flag_editor("B", 1, 0, 1);
-	flag_editor("IH", 2, 1, 0);
-	flag_editor("IL", 3, 1, 1);
-	flag_editor("A2", 4, 2, 0);
-	flag_editor("A1", 5, 2, 1);
-	flag_editor("R", 6, 3, 0);
-	flag_editor("G", 7, 3, 1);
-	flag_editor("V", 8, 4, 0);
-	flag_editor("N", 9, 4, 1);
-	flag_editor("C", 10, 5, 0);
-	flag_editor("Z", 11, 5, 1);
+	flag_editor("N",    0,  0, 0);
+	flag_editor("V",    1,  0, 1);
+	flag_editor("Z",    2,  1, 0);
+	flag_editor("C",    3,  1, 1);
+	flag_editor("G",    4,  2, 0);
+	flag_editor("R",    5,  2, 1);
+	flag_editor("ALT1", 6,  3, 0);
+	flag_editor("ALT2", 7,  3, 1);
+	flag_editor("IL",   8,  4, 0);
+	flag_editor("IH",   9,  4, 1);
+	flag_editor("B",    10, 5, 0);
+	flag_editor("IRQ",  11, 5, 1);
+
 	//layout->addStretch();
 	fullLayout->addLayout(layout);
 }
@@ -232,18 +233,18 @@ void RegisterEditSFX::commit() {
 	}
 	reg_commit(sfr, SNES::SFXDebugger::RegisterSFR);
 
-	flag_commit(SNES::SFXDebugger::FlagI, 0);
-	flag_commit(SNES::SFXDebugger::FlagB, 1);
-	flag_commit(SNES::SFXDebugger::FlagIH, 2);
-	flag_commit(SNES::SFXDebugger::FlagIL, 3);
-	flag_commit(SNES::SFXDebugger::FlagA2, 4);
-	flag_commit(SNES::SFXDebugger::FlagA1, 5);
-	flag_commit(SNES::SFXDebugger::FlagR, 6);
-	flag_commit(SNES::SFXDebugger::FlagG, 7);
-	flag_commit(SNES::SFXDebugger::FlagV, 8);
-	flag_commit(SNES::SFXDebugger::FlagN, 9);
-	flag_commit(SNES::SFXDebugger::FlagC, 10);
-	flag_commit(SNES::SFXDebugger::FlagZ, 11);
+	flag_commit(SNES::SFXDebugger::FlagN,  0);
+	flag_commit(SNES::SFXDebugger::FlagV,  1);
+	flag_commit(SNES::SFXDebugger::FlagZ,  2);
+	flag_commit(SNES::SFXDebugger::FlagC,  3);
+	flag_commit(SNES::SFXDebugger::FlagG,  4);
+	flag_commit(SNES::SFXDebugger::FlagR,  5);
+	flag_commit(SNES::SFXDebugger::FlagA1, 6);
+	flag_commit(SNES::SFXDebugger::FlagA2, 7);
+	flag_commit(SNES::SFXDebugger::FlagIL, 8);
+	flag_commit(SNES::SFXDebugger::FlagIH, 9);
+	flag_commit(SNES::SFXDebugger::FlagB,  10);
+	flag_commit(SNES::SFXDebugger::FlagI,  11);
 }
 
 void RegisterEditSFX::synchronize() {
@@ -252,18 +253,18 @@ void RegisterEditSFX::synchronize() {
 	}
 	reg_sync(sfr, SNES::SFXDebugger::RegisterSFR);
 
-	flag_sync(SNES::SFXDebugger::FlagI, 0);
-	flag_sync(SNES::SFXDebugger::FlagB, 1);
-	flag_sync(SNES::SFXDebugger::FlagIH, 2);
-	flag_sync(SNES::SFXDebugger::FlagIL, 3);
-	flag_sync(SNES::SFXDebugger::FlagA2, 4);
-	flag_sync(SNES::SFXDebugger::FlagA1, 5);
-	flag_sync(SNES::SFXDebugger::FlagR, 6);
-	flag_sync(SNES::SFXDebugger::FlagG, 7);
-	flag_sync(SNES::SFXDebugger::FlagV, 8);
-	flag_sync(SNES::SFXDebugger::FlagN, 9);
-	flag_sync(SNES::SFXDebugger::FlagC, 10);
-	flag_sync(SNES::SFXDebugger::FlagZ, 11);
+	flag_sync(SNES::SFXDebugger::FlagN,  0);
+	flag_sync(SNES::SFXDebugger::FlagV,  1);
+	flag_sync(SNES::SFXDebugger::FlagZ,  2);
+	flag_sync(SNES::SFXDebugger::FlagC,  3);
+	flag_sync(SNES::SFXDebugger::FlagG,  4);
+	flag_sync(SNES::SFXDebugger::FlagR,  5);
+	flag_sync(SNES::SFXDebugger::FlagA1, 6);
+	flag_sync(SNES::SFXDebugger::FlagA2, 7);
+	flag_sync(SNES::SFXDebugger::FlagIL, 8);
+	flag_sync(SNES::SFXDebugger::FlagIH, 9);
+	flag_sync(SNES::SFXDebugger::FlagB,  10);
+	flag_sync(SNES::SFXDebugger::FlagI,  11);
 }
 
 #undef reg_editor
