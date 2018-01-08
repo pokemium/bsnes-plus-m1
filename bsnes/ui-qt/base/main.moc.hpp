@@ -23,12 +23,14 @@ public:
   QMenu *system;
     QAction *system_load;
     QAction *system_reload;
+    QAction *system_unload;
     QMenu *system_loadSpecial;
       QAction *system_loadSpecial_bsxSlotted;
       QAction *system_loadSpecial_bsx;
       QAction *system_loadSpecial_sufamiTurbo;
       QAction *system_loadSpecial_superGameBoy;
     QAction *system_saveMemoryPack;
+    CheckAction *system_pause;
     CheckAction *system_power;
     QAction *system_reset;
     QMenu *system_port1;
@@ -119,9 +121,11 @@ public slots:
   void loadSufamiTurboCartridge();
   void loadSuperGameBoyCartridge();
   void saveMemoryPack();
+  void pause();
   void power();
   void reset();
   void reloadCartridge();
+  void unloadCartridge();
   void setPort1None();
   void setPort1Gamepad();
   void setPort1Asciipad();

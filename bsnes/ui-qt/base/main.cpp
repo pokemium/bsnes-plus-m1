@@ -32,11 +32,15 @@ MainWindow::MainWindow() {
   system_saveMemoryPack = system->addAction("Save Memory Pack");
   system_saveMemoryPack->setVisible(false);
 
-  system_reload = system->addAction("Re&load");
+  system_reload = system->addAction("Reload");
+
+  system_unload = system->addAction("Unload");
 
   system->addSeparator();
 
-  system->addAction(system_power = new CheckAction("&Power", 0));
+  system->addAction(system_pause = new CheckAction("&Pause", 0));
+
+  system->addAction(system_power = new CheckAction("Power", 0));
 
   system_reset = system->addAction("&Reset");
 
@@ -71,19 +75,13 @@ MainWindow::MainWindow() {
   settings_videoMode = settings->addMenu("Video &Mode");
 
   settings_videoMode->addAction(settings_videoMode_1x = new RadioAction("Scale &1x", 0));
-
   settings_videoMode->addAction(settings_videoMode_2x = new RadioAction("Scale &2x", 0));
-
   settings_videoMode->addAction(settings_videoMode_3x = new RadioAction("Scale &3x", 0));
-
   settings_videoMode->addAction(settings_videoMode_4x = new RadioAction("Scale &4x", 0));
-
   settings_videoMode->addAction(settings_videoMode_5x = new RadioAction("Scale &5x", 0));
 
   settings_videoMode->addAction(settings_videoMode_max_normal = new RadioAction("Scale Max - &Normal", 0));
-
   settings_videoMode->addAction(settings_videoMode_max_wide = new RadioAction("Scale Max - &Wide", 0));
-
   settings_videoMode->addAction(settings_videoMode_max_wideZoom = new RadioAction("Scale Max - Wide &Zoom", 0));
 
   settings_videoMode->addSeparator();
@@ -124,19 +122,14 @@ MainWindow::MainWindow() {
   settings_emulationSpeed = settings->addMenu("Emulation &Speed");
 
   settings_emulationSpeed->addAction(settings_emulationSpeed_slowest = new RadioAction("Slowest", 0));
-
   settings_emulationSpeed->addAction(settings_emulationSpeed_slow = new RadioAction("Slow", 0));
-
   settings_emulationSpeed->addAction(settings_emulationSpeed_normal = new RadioAction("Normal", 0));
-
   settings_emulationSpeed->addAction(settings_emulationSpeed_fast = new RadioAction("Fast", 0));
-
   settings_emulationSpeed->addAction(settings_emulationSpeed_fastest = new RadioAction("Fastest", 0));
 
   settings_emulationSpeed->addSeparator();
 
   settings_emulationSpeed->addAction(settings_emulationSpeed_syncVideo = new CheckAction("Sync &Video", 0));
-
   settings_emulationSpeed->addAction(settings_emulationSpeed_syncAudio = new CheckAction("Sync &Audio", 0));
 
   settings_configuration = settings->addAction("&Configuration ...");
@@ -147,15 +140,10 @@ MainWindow::MainWindow() {
   tools_movies = tools->addMenu("&Movies");
 
   tools_movies_play = tools_movies->addAction("Play Movie ...");
-
   tools_movies_stop = tools_movies->addAction("Stop");
-
   tools_movies_recordFromPowerOn = tools_movies->addAction("Record Movie (and restart system)");
-
   tools_movies_recordFromHere = tools_movies->addAction("Record Movie (starting from here)");
-
   tools_captureScreenshot = tools->addAction("&Capture Screenshot");
-
   tools_captureSPC = tools->addAction("Capture &SPC Dump");
 
   tools->addSeparator();
@@ -179,9 +167,7 @@ MainWindow::MainWindow() {
   tools->addSeparator();
 
   tools_cheatEditor = tools->addAction("Cheat &Editor ...");
-
   tools_cheatFinder = tools->addAction("Cheat &Finder ...");
-
   tools_stateManager = tools->addAction("&State Manager ...");
 
   tools_effectToggle = tools->addAction("Effect &Toggle ...");
@@ -203,29 +189,28 @@ MainWindow::MainWindow() {
   #if defined(PLATFORM_OSX) && defined(DEBUGGER)
   debugger_menu = menuBar->addMenu("Debugger");
   debugger_show = debugger_menu->addAction("Show Debugger");
+  debugger_show->setShortcut(Qt::CTRL | Qt::Key_D);
   debugger_menu->addSeparator();
 
-  { QAction *debug_action = debugger_menu->addAction("Breakpoint Editor"); debug_action->setData(Debugger::MenuAction::BreakpointsWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Disassembler"); debug_action->setData(Debugger::MenuAction::DisassemblerWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Memory Editor"); debug_action->setData(Debugger::MenuAction::MemoryWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Properties"); debug_action->setData(Debugger::MenuAction::PropertiesWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Measurements"); debug_action->setData(Debugger::MenuAction::MeasurementsWindow); }
+  { QAction *debug_action = debugger_menu->addAction("New Memory Editor"); debug_action->setData(Debugger::MenuAction::MemoryWindow); debug_action->setShortcut(Qt::CTRL | Qt::Key_M); }
+  { QAction *debug_action = debugger_menu->addAction("Show Breakpoint Editor"); debug_action->setData(Debugger::MenuAction::BreakpointsWindow); debug_action->setShortcut(Qt::CTRL | Qt::Key_B); }
+  { QAction *debug_action = debugger_menu->addAction("Show System Properties"); debug_action->setData(Debugger::MenuAction::PropertiesWindow); }
+  { QAction *debug_action = debugger_menu->addAction("Show Measurements"); debug_action->setData(Debugger::MenuAction::MeasurementsWindow); }
   debugger_menu->addSeparator();
 
-  { QAction *debug_action = debugger_menu->addAction("Tile Viewer"); debug_action->setData(Debugger::MenuAction::TileWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Tilemap Viewer"); debug_action->setData(Debugger::MenuAction::TilemapWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Sprite Viewer"); debug_action->setData(Debugger::MenuAction::OAMWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Palette Viewer"); debug_action->setData(Debugger::MenuAction::CGRAMWindow); }
+  { QAction *debug_action = debugger_menu->addAction("Show Tile Viewer"); debug_action->setData(Debugger::MenuAction::TileWindow); }
+  { QAction *debug_action = debugger_menu->addAction("Show Tilemap Viewer"); debug_action->setData(Debugger::MenuAction::TilemapWindow); }
+  { QAction *debug_action = debugger_menu->addAction("Show Sprite Viewer"); debug_action->setData(Debugger::MenuAction::OAMWindow); }
+  { QAction *debug_action = debugger_menu->addAction("Show Palette Viewer"); debug_action->setData(Debugger::MenuAction::CGRAMWindow); }
   debugger_menu->addSeparator();
 
-  { QAction *debug_action = debugger_menu->addAction("Clear Console"); debug_action->setData(Debugger::MenuAction::ClearConsole); }
+  { QAction *debug_action = debugger_menu->addAction("Clear Console"); debug_action->setData(Debugger::MenuAction::ClearConsole); debug_action->setShortcut(Qt::CTRL | Qt::Key_K); }
   { QAction *debug_action = debugger_menu->addAction("Debugger Options"); debug_action->setData(Debugger::MenuAction::OptionsWindow); }
   #endif
 
   help = menuBar->addMenu("&Help");
 
   help_documentation = help->addAction("&Documentation ...");
-
   help_license = help->addAction("&License ...");
 
   #if !defined(PLATFORM_OSX)
@@ -234,6 +219,17 @@ MainWindow::MainWindow() {
 
   help_about = help->addAction("&About ...");
   help_about->setMenuRole(QAction::AboutRole);
+
+  #if defined(PLATFORM_OSX)
+  //default macOS shortcuts
+  system_load->setShortcuts(QKeySequence::Open);
+  system_reload->setShortcut(Qt::CTRL | Qt::Key_R);
+  system_unload->setShortcut(Qt::CTRL | Qt::Key_U);
+  system_pause->setShortcut(Qt::CTRL | Qt::Key_P);
+  system_power->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_P);
+  system_reset->setShortcut(Qt::CTRL | Qt::Key_T);
+  #endif
+
 
   //canvas
   canvasContainer = new CanvasObject;
@@ -276,11 +272,13 @@ MainWindow::MainWindow() {
   //slots
   connect(system_load, SIGNAL(triggered()), this, SLOT(loadCartridge()));
   connect(system_reload, SIGNAL(triggered()), this, SLOT(reloadCartridge()));
+  connect(system_unload, SIGNAL(triggered()), this, SLOT(unloadCartridge()));
   connect(system_loadSpecial_bsxSlotted, SIGNAL(triggered()), this, SLOT(loadBsxSlottedCartridge()));
   connect(system_loadSpecial_bsx, SIGNAL(triggered()), this, SLOT(loadBsxCartridge()));
   connect(system_loadSpecial_sufamiTurbo, SIGNAL(triggered()), this, SLOT(loadSufamiTurboCartridge()));
   connect(system_loadSpecial_superGameBoy, SIGNAL(triggered()), this, SLOT(loadSuperGameBoyCartridge()));
   connect(system_saveMemoryPack, SIGNAL(triggered()), this, SLOT(saveMemoryPack()));
+  connect(system_pause, SIGNAL(triggered()), this, SLOT(pause()));
   connect(system_power, SIGNAL(triggered()), this, SLOT(power()));
   connect(system_reset, SIGNAL(triggered()), this, SLOT(reset()));
   connect(system_port1_none, SIGNAL(triggered()), this, SLOT(setPort1None()));
@@ -351,9 +349,13 @@ MainWindow::MainWindow() {
 }
 
 void MainWindow::syncUi() {
+  system_reload->setEnabled(application.currentRom != "");
+  system_unload->setEnabled(SNES::cartridge.loaded());
+
   system_power->setEnabled(SNES::cartridge.loaded());
   system_power->setChecked(application.power == true);
-  system_power->setEnabled(SNES::cartridge.loaded());
+  system_pause->setEnabled(SNES::cartridge.loaded() && application.power);
+  system_pause->setChecked(application.pause == true);
   system_reset->setEnabled(SNES::cartridge.loaded() && application.power);
 
   system_port1_none->setChecked      (config().input.port1 == ControllerPort1::None);
@@ -432,6 +434,10 @@ void MainWindow::reloadCartridge() {
   utility.modifySystemState(Utility::ReloadCartridge);
 }
 
+void MainWindow::unloadCartridge() {
+  utility.modifySystemState(Utility::UnloadCartridge);
+}
+
 void MainWindow::loadBsxSlottedCartridge() {
   loaderWindow->loadBsxSlottedCartridge("", "");
 }
@@ -459,6 +465,12 @@ void MainWindow::power() {
   } else {
     utility.modifySystemState(Utility::PowerOff);
   }
+}
+
+void MainWindow::pause() {
+  application.pause = !application.pause;
+  if (application.pause) audio.clear();
+  syncUi();
 }
 
 void MainWindow::reset() {
