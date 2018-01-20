@@ -58,10 +58,9 @@ public:
   void addBreakpoint(const string& addr, const string& mode, const string& source);
   void addBreakpoint(const string& breakpoint);
   void removeBreakpoint(uint32_t index);
-  void setBreakOnBrk(bool b);
+  void setBreakOnBRK(bool b);
+  void setBreakOnWDM(bool b);
   string toStrings() const;
-
-  void setBreakOnWDM(bool value);
   int32_t indexOfBreakpointExec(uint32_t addr, const string &source) const;
 
 public slots:

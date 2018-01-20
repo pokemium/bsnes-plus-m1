@@ -266,9 +266,14 @@ void BreakpointEditor::clear() {
   }
 }
 
-void BreakpointEditor::setBreakOnBrk(bool b) {
+void BreakpointEditor::setBreakOnBRK(bool b) {
   breakOnBRK->setChecked(b);
   SNES::debugger.break_on_brk = b;
+}
+
+void BreakpointEditor::setBreakOnWDM(bool b) {
+  breakOnWDM->setChecked(b);
+  SNES::debugger.break_on_wdm = b;
 }
 
 void BreakpointEditor::addBreakpoint(const string& addr, const string& mode, const string& source) {
@@ -317,8 +322,4 @@ string BreakpointEditor::toStrings() const {
   }
 
   return breakpoints;
-}
-
-void BreakpointEditor::setBreakOnWDM(bool value) {
-  breakOnWDM->setChecked(value);
 }

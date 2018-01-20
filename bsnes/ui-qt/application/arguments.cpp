@@ -45,7 +45,7 @@ bool Application::parseArgumentSwitch(const string& arg, const string& parameter
   }
 
   if(arg == "--break-on-brk") {
-    breakpointEditor->setBreakOnBrk(true);
+    breakpointEditor->setBreakOnBRK(true);
     return false;
   }
 
