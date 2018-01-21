@@ -21,6 +21,7 @@ public:
 
   DebugPrintCommand(const string &command);
   virtual void execute();
+  nall::string processCmd(const nall::string &cmd);
   virtual nall::string dump() const;
 
   Level level;

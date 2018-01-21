@@ -25,6 +25,34 @@ DebugPrintCommand::DebugPrintCommand(const string &command) {
 }
 
 // ------------------------------------------------------------------------
+string DebugPrintCommand::processCmd(const string &cmd) {
+  optional<unsigned> par = cmd.position(":");
+
+  if (par) {
+    string cmdName = nall::substr(cmd, 0, par());
+    string cmdPar = nall::substr(cmd, par()+1);
+
+    if (cmdName == "dp") {
+      uint32_t address = nall::hex(cmdPar);
+
+      SNES::debugger.bus_access = true;
+      uint8_t data0 = SNES::debugger.read(SNES::Debugger::MemorySource::CPUBus, address & 0xFFFFFF);
+      uint8_t data1 = SNES::debugger.read(SNES::Debugger::MemorySource::CPUBus, (address+1) & 0xFFFFFF);
+      SNES::debugger.bus_access = false;
+
+      uint16_t data = data0 | (data1 << 8);
+
+      return hex<4,'0'>(data);
+    }
+
+    return "CMD";
+
+  } else {
+    return "";
+  }
+}
+
+// ------------------------------------------------------------------------
 void DebugPrintCommand::execute() {
   string color, prefix;
 
@@ -39,7 +67,33 @@ void DebugPrintCommand::execute() {
     case Fatal: color = "ff0000"; prefix = "[FATAL]"; break;
   }
 
-  debugger->echo(string() << "<font color='#" << color << "'> " << prefix << " " << message << "</font><br>");
+  string finalmessage;
+  string msg(message);
+
+  while (msg.length()) {
+    optional<unsigned> pos = msg.position("$");
+    if (pos) {
+      unsigned index = pos();
+      finalmessage.append(nall::substr(msg, 0, index));
+      msg = nall::substr(msg, index + 1);
+
+      if (msg[0] == '{') {
+        optional<unsigned> endPos = msg.position("}");
+        if (endPos) {
+          string cmd = nall::substr(msg, 1, endPos() - 1);
+          msg = nall::substr(msg, endPos()+1);
+
+          finalmessage.append(processCmd(cmd));
+        }
+      }
+    } else {
+      finalmessage.append(msg);
+      break;
+    }
+  }
+
+  puts(string(prefix, " ", finalmessage));
+  debugger->echo(string() << "<font color='#" << color << "'> " << prefix << " " << finalmessage << "</font><br>");
 }
 
 // ------------------------------------------------------------------------
