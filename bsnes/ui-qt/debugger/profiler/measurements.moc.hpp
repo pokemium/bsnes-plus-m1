@@ -111,6 +111,8 @@ public:
     return measurements[index];
   }
 
+  Measurement* find(const QString &name);
+
 signals:
   void created(Measurement*);
   void removed(Measurement*);

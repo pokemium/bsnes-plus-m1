@@ -249,8 +249,10 @@ MeasurementEditor::MeasurementEditor()
   QGroupBox *previewBox = new QGroupBox("Preview");
   QVBoxLayout *previewBoxLayout = new QVBoxLayout();
   preview = new GraphView();
+  graph = new Graph();
   preview->setMinimumHeight(150);
   preview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+  preview->setGraph(graph);
   previewBoxLayout->addWidget(preview);
   previewBox->setLayout(previewBoxLayout);
   rightLayout->addWidget(previewBox);
@@ -442,7 +444,13 @@ void MeasurementEditor::select(Measurement *measurement) {
   triggerAddress->setCheckState(measurement->triggerOnExecute ? Qt::Checked : Qt::Unchecked);
   addressValue->setText(hex<6,'0'>(measurement->triggerAddress));
   triggerOther->setCheckState(measurement->triggerOnCalculation ? Qt::Checked : Qt::Unchecked);
-  // otherValue
+
+  int32_t other = measurements->indexOf(measurement->triggerMeasurement);
+  if (other == -1) {
+    otherValue->setCurrentIndex(0);
+  } else {
+    otherValue->setCurrentIndex(otherValue->findData(QVariant(other)));
+  }
 
   switch(measurement->op) {
     case Measurement::OP_ADD: opAdd->setChecked(true); break;
@@ -465,7 +473,17 @@ void MeasurementEditor::select(Measurement *measurement) {
   left.currentMeasurement = &measurement->left;
   right.currentMeasurement = &measurement->right;
 
-  preview->setMeasurement(measurement);
+  graph->reset();
+  graph->addLine("0", 0);
+  graph->addLine("64", 64);
+  graph->addLine("128", 128);
+  graph->addLine("192", 192);
+  graph->addLine("256", 256);
+  graph->addValue(GraphValue(measurement->name, measurement));
+
+  preview->setGraph(graph);
+  preview->setTrigger(currentMeasurement);
+  preview->clear();
 }
 
 // ------------------------------------------------------------------------

@@ -255,3 +255,14 @@ void Measurements::remove(Measurement *measurement) {
 }
 
 // ------------------------------------------------------------------------
+Measurement* Measurements::find(const QString &name) {
+  for (int32_t i=0; i<numMeasurements; i++) {
+    if (measurements[i]->name == name) {
+      return measurements[i];
+    }
+  }
+
+  return NULL;
+}
+
+// ------------------------------------------------------------------------

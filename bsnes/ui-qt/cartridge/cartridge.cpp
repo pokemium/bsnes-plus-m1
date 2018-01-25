@@ -113,6 +113,8 @@ bool Cartridge::loadNormal(const char *base) {
 
   #if defined(DEBUGGER)
     debugger->symbolsCPU->loadFromFile(nall::basename(baseName), ".sym");
+    debugger->symbolsCPU->loadFromFile(nall::basename(baseName), ".cpu.sym");
+    debugger->symbolsSMP->loadFromFile(nall::basename(baseName), ".smp.sym");
   #endif
 
   fileName = baseName;

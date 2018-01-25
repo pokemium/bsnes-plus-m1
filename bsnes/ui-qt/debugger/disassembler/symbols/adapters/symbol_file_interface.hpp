@@ -31,7 +31,10 @@ public:
     Comments = 0x0020,
     DebugInterface = 0x0040,
     Files = 0x0080,
-    LineMap = 0x0100
+    LineMap = 0x0100,
+
+    Measurements = 0x1000,
+    Graphs = 0x2000
   };
 
 };

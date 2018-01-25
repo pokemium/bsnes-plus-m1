@@ -74,6 +74,7 @@ public:
   void addLocation(uint32_t address, const string &name);
   void addComment(uint32_t address, const string &name);
   void addSymbol(uint32_t address, const Symbol &name);
+  void addNewSymbols(uint32_t address, const Symbols &s);
   void addCommand(uint32_t id, const string &content);
   void removeSymbol(uint32_t address, Symbol::Type type);
   void loadFromString(const string &file);

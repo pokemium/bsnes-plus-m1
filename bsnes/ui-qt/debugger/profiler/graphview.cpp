@@ -2,49 +2,58 @@
 
 // ------------------------------------------------------------------------
 GraphView::GraphView()
-  : autoMin(true)
-  , autoMax(true)
-  , autoRedraw(true)
-  , currentMeasurement(NULL)
+  : graph(NULL)
+  , currentTrigger(NULL)
 {
+  connect(measurements, SIGNAL(removed(Measurement*)), this, SLOT(onRemovedMeasurement(Measurement*)));
+
   clear();
 }
 
 // ------------------------------------------------------------------------
 GraphView::~GraphView() {
-  setMeasurement(NULL);
+  setGraph(NULL);
+  setTrigger(NULL);
 }
 
 // ------------------------------------------------------------------------
 void GraphView::clear() {
-  startValue = 0;
-  historyLength = 0;
-
-  if (autoMin) {
-    min = 0;
-  }
-
-  if (autoMax) {
-    max = 0;
-  }
-
   update();
+}
+
+// ------------------------------------------------------------------------
+void GraphView::onRemovedMeasurement(Measurement *measurement) {
+  if (measurement == currentTrigger) {
+    setTrigger(NULL);
+  }
+}
+
+// ------------------------------------------------------------------------
+void GraphView::setTrigger(Measurement *measurement) {
+  if (currentTrigger != NULL) {
+    disconnect(currentTrigger, SIGNAL(triggered(int32_t)), this, SLOT(trigger()));
+  }
+
+  currentTrigger = measurement;
+
+  if (currentTrigger != NULL) {
+    connect(currentTrigger, SIGNAL(triggered(int32_t)), this, SLOT(trigger()));
+  }
 }
 
 // ------------------------------------------------------------------------
 void GraphView::paintEvent(QPaintEvent *event) {
   QPainter painter(this);
-
   painter.fillRect(event->rect(), QColor(255, 255, 255, 255));
 
-  int32_t localMin = min - 10;
-  int32_t localMax = max + 10;
+  if (graph == NULL) {
+    return;
+  }
 
   int32_t w = width();
-  int32_t top = 10;
-  int32_t bottom = height() - 10;
-  int32_t diff = localMax - localMin;
-
+  int32_t top = 0;
+  int32_t bottom = height();
+  int32_t diff = max - min;
   if (diff <= 0){
     diff = 1;
   }
@@ -53,81 +62,80 @@ void GraphView::paintEvent(QPaintEvent *event) {
   }
 
   float pixelPerPointY = (float)(bottom - top) / (float)diff;
-  float center = (float)top + ((float)localMax * pixelPerPointY);
+  float center = (float)top + ((float)max * pixelPerPointY);
 
   painter.setPen(QColor(192, 192, 192, 255));
-  painter.drawLine(0, top, w, top);
-  painter.drawLine(0, bottom, w, bottom);
+  for (int32_t i=graph->lines.size() - 1; i>=0; i--) {
+    int32_t y = center - (float)graph->lines[i].offset * pixelPerPointY;
+    painter.drawLine(0, y, w, y);
+    painter.drawText(2, y - 2, graph->lines[i].name);
+  }
 
-  painter.setPen(QColor(224, 224, 224, 255));
-  painter.drawLine(0, center, w, center);
-
-  float pixelPerPointX = (float)w / (float)GRAPH_HISTORY_SIZE;
+  float pixelPerPointX = (float)w / (float)MAX_GRAPH_BUFFER;
   float x = 0;
 
-  uint32_t index = startValue;
+  for (int32_t j=graph->values.size()-1; j>=0; j--) {
+    const GraphValue &gv = graph->values[j];
+
+    uint32_t index = gv.offset;
+    bool first = true;
+    QPainterPath path;
+    for (uint32_t i=0; i<gv.size; i++) {
+      float y = center - (gv.buffer[index] * pixelPerPointY);
+
+      if (first) {
+        first = false;
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+
+      if (++index == gv.size) {
+        index = 0;
+      }
+
+      x += pixelPerPointX;
+    }
+
+    painter.setPen(QColor(255, 0, 0, 255));
+    painter.drawPath(path);
+  }
+}
+
+// ------------------------------------------------------------------------
+void GraphView::setGraph(Graph* graph) {
+  this->graph = graph;
+
   bool first = true;
-  QPainterPath path;
-  for (uint32_t i=0; i<historyLength; i++) {
-    float y = center - (values[index] * pixelPerPointY);
-
+  min = 0;
+  max = 0;
+  for (int32_t i=graph->lines.size() - 1; i>=0; i--) {
     if (first) {
+      max = min = graph->lines[i].offset;
       first = false;
-      path.moveTo(x, y);
     } else {
-      path.lineTo(x, y);
+      if (min > graph->lines[i].offset) {
+        min = graph->lines[i].offset;
+      }
+      if (max < graph->lines[i].offset) {
+        max = graph->lines[i].offset;
+      }
     }
-
-    if (++index == historyLength) {
-      index = 0;
-    }
-
-    x += pixelPerPointX;
   }
 
-  painter.setPen(QColor(255, 0, 0, 255));
-  painter.drawPath(path);
-}
+  min = min - 10;
+  max = max + 10;
 
-// ------------------------------------------------------------------------
-void GraphView::setMeasurement(Measurement* measurement) {
-  if (currentMeasurement) {
-    disconnect(currentMeasurement, SIGNAL(triggered(int32_t)), this, SLOT(add(int32_t)));
-  }
-
-  currentMeasurement = measurement;
   clear();
-
-  if (currentMeasurement) {
-    connect(currentMeasurement, SIGNAL(triggered(int32_t)), this, SLOT(add(int32_t)));
-  }
 }
 
 // ------------------------------------------------------------------------
-void GraphView::add(int32_t value) {
-  uint32_t offset;
-
-  if (historyLength == GRAPH_HISTORY_SIZE) {
-    offset = startValue;
-    startValue = (startValue + 1) % GRAPH_HISTORY_SIZE;
-  } else {
-    offset = (startValue + historyLength) % GRAPH_HISTORY_SIZE;
-    historyLength++;
+void GraphView::trigger() {
+  if (graph) {
+    graph->trigger();
   }
 
-  if (autoMin && value < min) {
-    min = value;
-  }
-
-  if (autoMax && value > max) {
-    max = value;
-  }
-
-  values[offset] = value;
-
-  if (autoRedraw) {
-    update();
-  }
+  update();
 }
 
 // ------------------------------------------------------------------------

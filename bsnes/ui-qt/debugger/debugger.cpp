@@ -11,12 +11,15 @@ Debugger *debugger;
 
 #include "disassembler/symbols/symbol_map.cpp"
 #include "disassembler/symbols/symbol_map_cpu.hpp"
+#include "disassembler/symbols/symbol_map_smp.hpp"
 
 #include "disassembler/processor/processor.cpp"
 #include "disassembler/processor/common_processor.cpp"
 #include "disassembler/processor/cpu_processor.cpp"
+#include "disassembler/processor/smp_processor.cpp"
 
 #include "profiler/measurements.cpp"
+#include "profiler/graphs.cpp"
 #include "profiler/graphview.cpp"
 #include "profiler/measurementeditor.cpp"
 
@@ -76,6 +79,7 @@ Debugger::Debugger() {
   cgramViewer = new CgramViewer;
   debuggerOptions = new DebuggerOptions;
 
+  graphs = new Graphs;
   measurements = new Measurements;
   measurementEditor = new MeasurementEditor;
 
@@ -126,11 +130,12 @@ Debugger::Debugger() {
 
   symbolsCPU = new SymbolMap();
   //symbolsCPU->loadFromString(DEFAULT_SYMBOL_MAP_CPU);
-
   symbolsSA1 = new SymbolMap();
+  symbolsSMP = new SymbolMap();
+  symbolsSMP->loadFromString(DEFAULT_SYMBOL_MAP_SMP);
 
   debugCPU = new DebuggerView(registerEditCPU, new CpuDisasmProcessor(CpuDisasmProcessor::CPU, symbolsCPU), true);
-  debugSMP = new DebuggerView(registerEditSMP, new CommonDisasmProcessor(CommonDisasmProcessor::SMP));
+  debugSMP = new DebuggerView(registerEditSMP, new SmpDisasmProcessor(symbolsSMP));
   debugSA1 = new DebuggerView(registerEditSA1, new CpuDisasmProcessor(CpuDisasmProcessor::SA1, symbolsSA1));
   debugSFX = new DebuggerView(registerEditSFX, new CommonDisasmProcessor(CommonDisasmProcessor::SFX));
 
@@ -347,7 +352,8 @@ void Debugger::modifySystemState(unsigned state) {
     }
 
     if(config().debugger.saveSymbols) {
-      debugger->symbolsCPU->saveToFile(nall::basename(symfile), ".sym");
+      debugger->symbolsCPU->saveToFile(nall::basename(symfile), ".cpu.sym");
+      debugger->symbolsSMP->saveToFile(nall::basename(symfile), ".smp.sym");
     }
 
     if(config().debugger.saveBreakpoints) {
