@@ -167,8 +167,8 @@ TileViewer::TileViewer() {
   layout->addWidget(imageGridWidget, 10);
 
 
-  zoomCombo->setCurrentIndex(3 - 1);
-  onZoomChanged(3 - 1);
+  zoomCombo->setCurrentIndex(2 - 1);
+  onZoomChanged(2 - 1);
   updateForm();
 
   connect(exportButton,  SIGNAL(clicked(bool)), this, SLOT(onExportClicked()));
