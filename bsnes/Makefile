@@ -23,9 +23,7 @@ ifeq ($(DEBUG), 1)
   deployqt_flags += -no-strip
 else
   flags += -O3 -fomit-frame-pointer
-  ifeq ($(platform),osx)
-    # -s is deprecated as of Apple LLVM 7.0, and using it breaks linking with some versions
-  else
+  ifneq ($(platform),osx)
     link += -s
   endif
 endif
@@ -73,12 +71,11 @@ compile = \
 %.o: $<; $(call compile)
 
 all: build plugins
-ifeq ($(platform),osx)
-	$(qtpath)/bin/macdeployqt $(osxbundle) $(deployqt_flags)
-endif
+	@echo \"all\" done
 
-deploy:
+deploy: all
 	$(qtpath)/bin/macdeployqt $(osxbundle) $(deployqt_flags)
+	@echo \"deploy\" done
 
 include $(snes)/Makefile
 include $(ui)/Makefile

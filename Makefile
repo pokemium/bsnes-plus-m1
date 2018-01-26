@@ -5,12 +5,12 @@ include bsnes/nall/Makefile
 default: bsnes
 
 bsnes:
-	@$(MAKE) -C bsnes -j4
+	@$(MAKE) -C bsnes -j4 deploy
 
 all: clean
-	@$(MAKE) -C bsnes -j4
+	@$(MAKE) -C bsnes -j4 deploy
 	@$(MAKE) clean -C bsnes
-	@$(MAKE) -C bsnes -j4 profile=accuracy
+	@$(MAKE) -C bsnes -j4 deploy profile=accuracy
 	@$(MAKE) clean -C bsnes
 
 dist:
