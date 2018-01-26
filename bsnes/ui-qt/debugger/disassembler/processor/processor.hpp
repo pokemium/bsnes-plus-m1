@@ -16,4 +16,6 @@ public:
   virtual void write(uint32_t address, uint8_t data) = 0;
 
   virtual string getBreakpointBusName() = 0;
+
+  virtual string getDefaultComment(uint32_t currentAddress) = 0;
 };

@@ -531,6 +531,11 @@ void DisassemblerView::paintOpcode(QPainter &painter, RenderableDisassemblerLine
 
     if (currentRow.isComment()) {
       painter.drawText(columnPositions[COLUMN_COMMENT] + charPadding, y, currentRow.name);
+    } else {
+      string defaultComment = processor->getDefaultComment(line.line.address);
+      if (defaultComment.length()) {
+        painter.drawText(columnPositions[COLUMN_COMMENT] + charPadding, y, defaultComment);
+      }
     }
   }
 

@@ -207,3 +207,8 @@ void CommonDisasmProcessor::write(uint32_t address, uint8_t data) {
 uint32_t CommonDisasmProcessor::getBusSize() {
   return 0x1000000;
 }
+
+// ------------------------------------------------------------------------
+string CommonDisasmProcessor::getDefaultComment(uint32_t currentAddress) {
+  return "";
+}

@@ -340,3 +340,24 @@ void CpuDisasmProcessor::write(uint32_t address, uint8_t data) {
 uint32_t CpuDisasmProcessor::getBusSize() {
   return 0x1000000;
 }
+
+// ------------------------------------------------------------------------
+string CpuDisasmProcessor::getDefaultComment(uint32_t currentAddress) {
+  string comment = "";
+  uint8_t instruction = read(currentAddress);
+  uint8_t op1 = read(currentAddress + 1);
+
+  switch (read(currentAddress)) {
+    case 0xc2: // rep
+      if (op1 & 0x20) comment << "A16";
+      if (op1 & 0x10) comment << "X16";
+      return comment;
+
+    case 0xe2: // sep
+      if (op1 & 0x20) comment << "A8";
+      if (op1 & 0x10) comment << "X8";
+      return comment;
+
+    default: return comment;
+  }
+}

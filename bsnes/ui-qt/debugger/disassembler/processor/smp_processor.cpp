@@ -139,3 +139,8 @@ void SmpDisasmProcessor::write(uint32_t address, uint8_t data) {
 uint32_t SmpDisasmProcessor::getBusSize() {
   return 0x10000;
 }
+
+// ------------------------------------------------------------------------
+string SmpDisasmProcessor::getDefaultComment(uint32_t currentAddress) {
+  return "";
+}
