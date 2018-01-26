@@ -347,7 +347,7 @@ string CpuDisasmProcessor::getDefaultComment(uint32_t currentAddress) {
   uint8_t instruction = read(currentAddress);
   uint8_t op1 = read(currentAddress + 1);
 
-  switch (read(currentAddress)) {
+  switch (instruction) {
     case 0xc2: // rep
       if (op1 & 0x20) comment << "A16";
       if (op1 & 0x10) comment << "X16";
