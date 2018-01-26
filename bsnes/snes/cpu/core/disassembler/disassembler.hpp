@@ -86,6 +86,9 @@ struct Opcode {
 
       case OPTYPE_IM:
         return (paramsize == 8 ? 2 : 3);
+
+      default:
+        return 0;
     }
   }
 
@@ -135,6 +138,7 @@ struct Opcode {
       case 2: return op8();
       case 3: return op16();
       case 4: return op24();
+      default: return 0;
     }
   }
 
