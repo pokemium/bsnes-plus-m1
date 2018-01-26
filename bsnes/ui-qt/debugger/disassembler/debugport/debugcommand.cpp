@@ -5,7 +5,7 @@ DebugPrintCommand::DebugPrintCommand(const string &command) {
   nall::lstring parts;
   parts.split<2>(" ", command);
 
-  if (!parts.size() == 2) {
+  if (parts.size() != 2) {
     level = Fatal;
     message = "Not enough parameters for command";
   } else {
