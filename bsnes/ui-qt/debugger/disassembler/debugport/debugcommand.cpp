@@ -93,7 +93,7 @@ void DebugPrintCommand::execute() {
   }
 
   puts(string(prefix, " ", finalmessage));
-  debugger->echo(string() << "<font color='#" << color << "'> " << prefix << " " << finalmessage << "</font><br>");
+  //debugger->echo(string() << "<font color='#" << color << "'> " << prefix << " " << finalmessage << "</font><br>");
 }
 
 // ------------------------------------------------------------------------
