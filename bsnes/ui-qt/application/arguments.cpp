@@ -56,7 +56,6 @@ bool Application::parseArgumentSwitch(const string& arg, const string& parameter
 
   if(arg == "--test-mode") {
     breakpointEditor->setBreakOnWDM(true);
-    SNES::debugger.enable_debug_interface = true;
     SNES::debugger.test_mode = true;
     return false;
   }
