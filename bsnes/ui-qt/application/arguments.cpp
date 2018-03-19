@@ -54,6 +54,12 @@ bool Application::parseArgumentSwitch(const string& arg, const string& parameter
     return false;
   }
 
+  if(arg == "--test-mode") {
+    breakpointEditor->setBreakOnWDM(true);
+    SNES::debugger.test_mode = true;
+    return false;
+  }
+
   if(arg == "--breakpoint" || arg == "-b") {
     if(parameter == "" || parameter[0] == '-') return false;
 
@@ -78,6 +84,7 @@ void Application::printArguments() {
        "  --break-on-wdm                    break on WDM opcode\n"
        "  --break-on-brk                    break on BRK opcode\n"
        "  --enable-debug-interface          enables the debug port at $420E/$420F\n"
+       "  --test-mode                       enables test mode\n"
        "  -b / --breakpoint <breakpoint>    add breakpoint\n"
        "\n"
        "Breakpoint format: <addr>[-<addr end>][=<value>][:<rwx>[:<source>]]\n"
