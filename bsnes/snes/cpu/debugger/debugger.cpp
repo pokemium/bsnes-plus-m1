@@ -33,6 +33,10 @@ void CPUDebugger::op_step() {
 
     if (debugger.break_on_wdm || debugger.break_on_brk) {
       if ((opcode == 0x42 && debugger.break_on_wdm) || (opcode == 0x00 && debugger.break_on_brk)) {
+        if (debugger.test_mode) {
+          uint8_t ret = CPU::mmio_read(0x420e);
+          std::exit(ret);
+        }
         debugger.breakpoint_hit = Debugger::SoftBreakCPU;
         debugger.break_event = Debugger::BreakEvent::BreakpointHit;
         scheduler.exit(Scheduler::ExitReason::DebuggerEvent);

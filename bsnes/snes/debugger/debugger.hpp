@@ -48,6 +48,7 @@ public:
   bool break_on_wdm;
   bool break_on_brk;
   bool enable_debug_interface;
+  bool test_mode;
 
   void writeDebugPort(uint32 addr, uint8 data);
   uint16 debugPort;
