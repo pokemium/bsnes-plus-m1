@@ -72,5 +72,4 @@ public slots:
   void importMemory(SNES::Memory&, const string&) const;
 };
 
-//extern MemoryEditor *memoryEditor;
 extern QVector <MemoryEditor*> memoryEditors;
