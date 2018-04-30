@@ -98,7 +98,7 @@ PropertiesViewer::PropertiesViewer() {
   tabWidget->addTab(sa1PropertiesTab, "SA-1");
 
   sfxPropertiesTab = new PropertiesWidget(SNES::superfx);
-  tabWidget->addTab(sfxPropertiesTab, "Super FX");
+  tabWidget->addTab(sfxPropertiesTab, "GSU");
 
   controlLayout = new QHBoxLayout;
   controlLayout->setAlignment(Qt::AlignRight);

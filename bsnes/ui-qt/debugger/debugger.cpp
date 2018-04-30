@@ -143,7 +143,7 @@ Debugger::Debugger() {
   editTabs->addTab(debugCPU, "CPU");
   editTabs->addTab(debugSMP, "SMP");
   editTabs->addTab(debugSA1, "SA-1");
-  editTabs->addTab(debugSFX, "GSU-1");
+  editTabs->addTab(debugSFX, "GSU");
   editTabs->setTabPosition(QTabWidget::North);
   editTabs->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   mainLayout->addWidget(editTabs);

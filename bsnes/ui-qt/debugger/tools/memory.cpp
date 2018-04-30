@@ -39,7 +39,7 @@ MemoryEditor::MemoryEditor() {
   source->addItem("Cartridge ROM");
   source->addItem("Cartridge RAM");
   source->addItem("SA-1 bus");
-  source->addItem("SuperFX bus");
+  source->addItem("GSU bus");
   controlLayout->addWidget(source);
   controlLayout->addSpacing(2);
 
