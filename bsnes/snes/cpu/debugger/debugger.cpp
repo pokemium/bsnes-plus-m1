@@ -79,12 +79,15 @@ alwaysinline uint8_t CPUDebugger::op_readpc() {
 
 uint8 CPUDebugger::op_read(uint32 addr) {
   uint8 data = CPU::op_read(addr);
-  usage[addr] |= UsageRead;
-
-  int offset = cartridge.rom_offset(addr);
-  if (offset >= 0) cart_usage[offset] |= UsageRead;
-
-  debugger.breakpoint_test(Debugger::Breakpoint::Source::CPUBus, Debugger::Breakpoint::Mode::Read, addr, data);
+  // ignore dummy reads that can be caused by interrupts
+  if (!interrupt_pending()) {
+    usage[addr] |= UsageRead;
+  
+    int offset = cartridge.rom_offset(addr);
+    if (offset >= 0) cart_usage[offset] |= UsageRead;
+  
+    debugger.breakpoint_test(Debugger::Breakpoint::Source::CPUBus, Debugger::Breakpoint::Mode::Read, addr, data);
+  }
   return data;
 }
 
@@ -274,7 +277,7 @@ bool CPUDebugger::property(unsigned id, string &name, string &value) {
   }
 
   //internal
-  item("S-CPU MDR", string("0x", hex<2>(regs.mdr)));
+  item("S-CPU open bus", string("0x", hex<2>(regs.mdr)));
 
   //$2181-2183
   item("$2181-$2183", "");
@@ -287,8 +290,8 @@ bool CPUDebugger::property(unsigned id, string &name, string &value) {
   //$4200
   item("$4200", "");
   item("NMI Enable", status.nmi_enabled);
-  item("H-IRQ Enable", status.hirq_enabled);
-  item("V-IRQ Enable", status.virq_enabled);
+  item("H-Count IRQ Enable", status.hirq_enabled);
+  item("V-Count IRQ Enable", status.virq_enabled);
   item("Auto Joypad Poll", status.auto_joypad_poll);
 
   //$4201
@@ -297,27 +300,27 @@ bool CPUDebugger::property(unsigned id, string &name, string &value) {
 
   //$4202
   item("$4202", "");
-  item("Multiplicand", string("0x", hex<2>(status.wrmpya)));
+  item("Multiplicand", string(status.wrmpya, " (0x", hex<2>(status.wrmpya), ")"));
 
   //$4203
   item("$4203", "");
-  item("Multiplier", string("0x", hex<2>(status.wrmpyb)));
+  item("Multiplier", string(status.wrmpyb, " (0x", hex<2>(status.wrmpyb), ")"));
 
   //$4204-$4205
   item("$4204-$4205", "");
-  item("Dividend", string("0x", hex<4>(status.wrdiva)));
+  item("Dividend", string(status.wrdiva, " (0x", hex<4>(status.wrdiva), ")"));
 
   //$4206
   item("$4206", "");
-  item("Divisor", string("0x", hex<2>(status.wrdivb)));
+  item("Divisor", string(status.wrdivb, " (0x", hex<2>(status.wrdivb), ")"));
 
   //$4207-$4208
   item("$4207-$4208", "");
-  item("H-Time", string("0x", hex<4>(status.hirq_pos)));
+  item("H-Count", string("0x", hex<4>(status.hirq_pos)));
 
   //$4209-$420a
   item("$4209-$420a", "");
-  item("V-Time", string("0x", hex<4>(status.virq_pos)));
+  item("V-Count", string("0x", hex<4>(status.virq_pos)));
 
   //$420b
   unsigned dma_enable = 0;
@@ -365,11 +368,11 @@ bool CPUDebugger::property(unsigned id, string &name, string &value) {
 
   //$4214-$4215
   item("$4214-$4215", "");
-  item("Quotient", (unsigned)status.rddiv);
-
+  item("Quotient", string((unsigned)status.rddiv, " (0x", hex<4>(status.rddiv), ")"));
+  
   item("$4216-$4217", "");
-  item("Product / Remainder", (unsigned)status.rdmpy);
-
+  item("Product / Remainder", string((unsigned)status.rdmpy, " (0x", hex<4>(status.rdmpy), ")"));
+  
   item("$4218-$421f", "");
   item("Controller 1 Data", string("0x", hex<4>((status.joy1h << 8) | status.joy1l)));
   item("Controller 2 Data", string("0x", hex<4>((status.joy2h << 8) | status.joy2l)));
