@@ -12,7 +12,7 @@
 #elif defined(PLATFORM_WIN)
   #include "platform/platform_win.cpp"
   const char Style::Monospace[64] = "Lucida Console";
-  int Style::MonospaceSize = 12;
+  int Style::MonospaceSize = 10;
 #else
   #error "unsupported platform"
 #endif
