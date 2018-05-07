@@ -4,7 +4,7 @@ void SuperFX::disassemble_opcode(char *output, uint32 addr, bool track_regs) {
   char t[256] = "";
 
   *output = 0;
-  
+
   int temp_regs = disassemble_regs;
 
   SNES::debugger.bus_access = true;
@@ -22,26 +22,26 @@ void SuperFX::disassemble_opcode(char *output, uint32 addr, bool track_regs) {
     }
   }
   SNES::debugger.bus_access = false;
-  
+
   sprintf(output, "%.6x %s", addr, t);
 
   unsigned length = strlen(output);
   while(length++ < 25) strcat(output, " ");
-  
+
   // status register and some flags (TODO: other flags?)
-  sprintf(t, "S:%.4x %c%c%c%c ",
+  sprintf(t, "     S:%.4x %c%c%c%c   ",
       (unsigned) regs.sfr,
       (unsigned) regs.sfr & 2 ? 'Z' : 'z',
       (unsigned) regs.sfr & 4 ? 'C' : 'c',
       (unsigned) regs.sfr & 8 ? 'N' : 'n',
       (unsigned) regs.sfr & 16 ? 'V' : 'v');
   strcat(output, t);
-  
+
   // print all current and past used registers
   if (track_regs) {
     for (int i = 0; i < 16; i++) {
       if ((disassemble_regs | disassemble_lastregs) & (1 << i)) {
-        sprintf(t, "R%-2u:%.4x ", i, (unsigned) regs.r[i]);
+        sprintf(t, "R%02u:%.4x ", i, (unsigned) regs.r[i]);
         strcat(output, t);
       }
     }
