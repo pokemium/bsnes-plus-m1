@@ -66,6 +66,10 @@ TileViewer::TileViewer() {
   source = new QComboBox;
   source->addItem("VRAM", QVariant(TileRenderer::VRAM));
   source->addItem("S-CPU Bus", QVariant(TileRenderer::CPU_BUS));
+  source->addItem("Cartridge ROM", QVariant(TileRenderer::CART_ROM));
+  source->addItem("Cartridge RAM", QVariant(TileRenderer::CART_RAM));
+  source->addItem("SA1 Bus", QVariant(TileRenderer::SA1_BUS));
+  source->addItem("SFX Bus", QVariant(TileRenderer::SFX_BUS));
   sidebarLayout->addRow("Source:", source);
 
 
@@ -94,6 +98,7 @@ TileViewer::TileViewer() {
   bitDepth->addItem("4bpp", QVariant(TileRenderer::BPP4));
   bitDepth->addItem("8bpp", QVariant(TileRenderer::BPP8));
   bitDepth->addItem("Mode 7", QVariant(TileRenderer::MODE7));
+  bitDepth->addItem("Mode 7 EXTBG", QVariant(TileRenderer::MODE7_EXTBG));
   sidebarLayout->addRow("Bit Depth:", bitDepth);
 
   widthSpinBox = new QSpinBox;
@@ -207,17 +212,16 @@ void TileViewer::show() {
 void TileViewer::refresh() {
   if(inUpdateFormCall || inExportClickedCall) return;
 
+  updateRendererSettings();
+
   if(SNES::cartridge.loaded()) {
     cgramWidget->refresh();
 
-    updateRendererSettings();
-
     renderer.draw();
     imageGridWidget->setImage(renderer.image);
-
-    updateForm();
   }
 
+  updateForm();
   updateTileInfo();
 }
 
@@ -297,11 +301,11 @@ void TileViewer::stepAdddressField(bool forward) {
   unsigned step = renderer.bytesInbetweenTiles();
   if(renderer.source != TileRenderer::VRAM) step *= renderer.nTiles();
 
-  unsigned max = renderer.source == TileRenderer::VRAM ? 0x10000 : 0x1000000;
-
   if(forward) {
+    unsigned max = renderer.maxAddress();
     unsigned a = renderer.address + step;
     if(a >= max) a = max - step;
+    if(step > max) a = 0;
     renderer.address = a;
   } else {
     if(renderer.address >= step) {
