@@ -138,9 +138,9 @@ bool SFXDebugger::property(unsigned id, string &name, string &value) {
   
   item("Color Mode", md)
   item("Screen Height", ht);
-  item("Game Pak WRAM Access", (regs.scmr & 0x8) ? "Super FX" : "SNES")
-  item("Game Pak ROM Access", (regs.scmr & 0x10) ? "Super FX" : "SNES")
-  
+  item("Game Pak WRAM Access", (regs.scmr & 0x8) ? "GSU" : "SNES")
+  item("Game Pak ROM Access", (regs.scmr & 0x10) ? "GSU" : "SNES")
+
   item("$303b", "")
   item("Version Register (VCR)", string("0x", hex<2>(regs.vcr)))
   
