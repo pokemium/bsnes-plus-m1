@@ -106,7 +106,7 @@ void MeasurementEditorConfig::build(const QString &name) {
   variableSource->addItem("S-PPU OAM", QVariant((uint32_t)SNES::Debugger::MemorySource::OAM));
   variableSource->addItem("S-PPU CGRAM", QVariant((uint32_t)SNES::Debugger::MemorySource::CGRAM));
   variableSource->addItem("SA-1 bus", QVariant((uint32_t)SNES::Debugger::MemorySource::SA1Bus));
-  variableSource->addItem("SuperFX bus", QVariant((uint32_t)SNES::Debugger::MemorySource::SFXBus));
+  variableSource->addItem("GSU bus", QVariant((uint32_t)SNES::Debugger::MemorySource::SFXBus));
   contentLayout->addLayout(variableLayout);
 
   variableType = new QComboBox();

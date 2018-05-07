@@ -51,7 +51,7 @@ BreakpointItem::BreakpointItem(unsigned id_) : id(id_) {
   source->addItem("S-PPU OAM");
   source->addItem("S-PPU CGRAM");
   source->addItem("SA-1 bus");
-  source->addItem("SuperFX bus");
+  source->addItem("GSU bus");
   layout->addWidget(source, 1, BreakSource);
   connect(source, SIGNAL(currentIndexChanged(int)), this, SLOT(init()));
   connect(source, SIGNAL(currentIndexChanged(int)), this, SLOT(toggle()));

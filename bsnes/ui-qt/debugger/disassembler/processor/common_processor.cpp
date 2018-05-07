@@ -54,7 +54,7 @@ void CommonDisasmProcessor::setSource(Source source) {
 
   case SFX:
     usagePointer = SNES::superfx.usage;
-    memorySource = SNES::Debugger::MemorySource::SA1Bus;
+    memorySource = SNES::Debugger::MemorySource::SFXBus;
     mask = (1 << 23) - 1;
     break;
   }

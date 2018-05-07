@@ -39,7 +39,7 @@ Disassembler::Disassembler() {
   tab->addTab(cpuDisassembler, "S-CPU");
   tab->addTab(smpDisassembler, "S-SMP");
   tab->addTab(sa1Disassembler, "SA-1");
-  tab->addTab(sfxDisassembler, "SuperFX");
+  tab->addTab(sfxDisassembler, "GSU");
   layout->addWidget(tab);
 }
 
