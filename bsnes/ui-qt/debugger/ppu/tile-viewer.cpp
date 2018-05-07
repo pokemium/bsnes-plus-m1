@@ -69,7 +69,7 @@ TileViewer::TileViewer() {
   source->addItem("Cartridge ROM", QVariant(TileRenderer::CART_ROM));
   source->addItem("Cartridge RAM", QVariant(TileRenderer::CART_RAM));
   source->addItem("SA1 Bus", QVariant(TileRenderer::SA1_BUS));
-  source->addItem("SFX Bus", QVariant(TileRenderer::SFX_BUS));
+  source->addItem("GSU Bus", QVariant(TileRenderer::SFX_BUS));
   sidebarLayout->addRow("Source:", source);
 
 
