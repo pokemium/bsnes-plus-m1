@@ -82,7 +82,7 @@ void CpuDisasmProcessor::setOpcodeParams(DisassemblerLine &result, SNES::CPU::Op
       break;
 
     case SNES::CPU::OPTYPE_IDP:
-      result.paramFormat = "(%1X2)";
+      result.paramFormat = "(%1X2) ";
       result.params.append(DisassemblerParam::createAddress(opcode.op8(),decode(opcode.optype, opcode.op8(), pc)));
       break;
 
@@ -97,7 +97,7 @@ void CpuDisasmProcessor::setOpcodeParams(DisassemblerLine &result, SNES::CPU::Op
       break;
 
     case SNES::CPU::OPTYPE_ILDP:
-      result.paramFormat = "[%1X2]";
+      result.paramFormat = "[%1X2] ";
       result.params.append(DisassemblerParam::createAddress(opcode.op8(),decode(opcode.optype, opcode.op8(), pc)));
       break;
 
