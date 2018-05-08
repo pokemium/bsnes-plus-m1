@@ -25,6 +25,7 @@ Debugger *debugger;
 
 #include "registeredit.cpp"
 #include "debuggerview.cpp"
+#include "logview.cpp"
 
 #include "tools/breakpoint.cpp"
 #include "tools/memory.cpp"
@@ -41,28 +42,6 @@ Debugger *debugger;
 #include "ppu/cgram-viewer.cpp"
 
 #include "misc/debugger-options.cpp"
-
-const char consoleHtmlContent[] =
-  "<html>"
-  "<head>"
-  "<meta charset='utf-8'>"
-  "<style type = 'text/css'>"
-    "body { margin:2px; }"
-    "p,span { margin:0; white-space:pre-wrap; font-family:'SF Mono','Menlo','Liberation Mono','Lucida Console','Courier New'; font-size:10px; line-height:13px; }"
-  "</style>"
-  "<script type='text/javascript'>"
-    "window.pgend = function() { window.scrollTo(0,document.body.scrollHeight); };"
-    "window.pgclr = function() { document.body.textContent = ''; };"
-    "window.putp = function(s,c) {"
-      "const p = document.createElement('p');"
-      "p.textContent = ''+s;"
-      "if (!!c) p.style.color = ''+c;"
-      "document.body.appendChild(p);"
-    "};"
-  "</script>"
-  "</head>"
-  "<body></body>"
-  "</html>";
 
 Debugger::Debugger() {
   setObjectName("debugger");
@@ -153,8 +132,7 @@ Debugger::Debugger() {
   consolePane->setMargin(0);
   consolePane->setSpacing(Style::TightWidgetSpacing);
   consolePaneWidget->setLayout(consolePane);
-  console = new QWebEngineView;
-  console->setHtml(QString(consoleHtmlContent));
+  console = new LogView();
   consolePane->addWidget(console);
 
   QWidget *consoleExtrasWidget = new QWidget;
@@ -268,7 +246,6 @@ Debugger::Debugger() {
   connect(logDMA_other, SIGNAL(stateChanged(int)), this, SLOT(setLogDMAState(int)));
   connect(logClearButton, SIGNAL(released()), this, SLOT(clear()));
 
-
   SNES::debugger.logger = { &Debugger::echo, this };
 
   frameCounter = 0;
@@ -278,10 +255,6 @@ Debugger::Debugger() {
   QTimer *updateTimer = new QTimer(this);
   connect(updateTimer, SIGNAL(timeout()), this, SLOT(frameTick()));
   updateTimer->start(15);
-}
-
-void Debugger::paintEvent(QPaintEvent*) {
-  updateConsole();
 }
 
 void Debugger::createMemoryEditor() {
@@ -404,23 +377,12 @@ void Debugger::synchronize() {
   }
 }
 
-void Debugger::updateConsole() {
-  if (messageBuffer.size()) {
-    for (LogMessage &m : messageBuffer) {
-      console->page()->runJavaScript(string() << "putp('" << m.message << "', '" << m.color << "')");
-    }
-    console->page()->runJavaScript("pgend()");
-    messageBuffer.clear();
-  }
-}
-
 void Debugger::echo(const char *message, const char *color) {
-  messageBuffer.emplace_back(LogMessage(message, color));
+  console->echo(message, color);
 }
 
 void Debugger::clear() {
-  messageBuffer.clear();
-  console->page()->runJavaScript("pgclr()");
+  console->clear();
 }
 
 void Debugger::switchWindow() {
@@ -596,6 +558,7 @@ void Debugger::event() {
 
   audio.clear();
   autoUpdate();
+  console->update();
   show();
   activateWindow();
 }
@@ -607,7 +570,7 @@ void Debugger::frameTick() {
 
   if (frame < frameCounter) {
     autoUpdate();
-    updateConsole();
+    console->update();
   } else {
     // update memory editor every time since once per second isn't very useful
     // (TODO: and PPU viewers, maybe?)

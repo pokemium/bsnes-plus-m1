@@ -40,6 +40,7 @@ using namespace ruby;
 #include "cartridge/cartridge.hpp"
 
 #if defined(DEBUGGER)
+  #include "debugger/logview.moc.hpp"
   #include "debugger/debugger.moc.hpp"
   #include "debugger/disassembler/symbols/symbol_map.moc.hpp"
   #include "debugger/debuggerview.moc.hpp"

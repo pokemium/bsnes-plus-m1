@@ -1,16 +1,3 @@
-#include <list>
-
-struct LogMessage {
-  string message;
-  string color;
-
-  LogMessage(const string& _message, const string& _color = "") {
-    color = _color;
-    message = string() << _message;
-    message.replace("\n", "\\n");
-  }
-};
-
 class Debugger : public Window {
   Q_OBJECT
 
@@ -32,7 +19,7 @@ public:
 
   QVBoxLayout *layout;
   QSplitter *mainLayout;
-  QWebEngineView *console;
+  LogView *console;
   QToolBar *toolBar;
   QToolButton *runBreak;
   QToolButton *stepInstruction;
@@ -57,9 +44,7 @@ public:
   class SymbolMap *symbolsSA1;
   class SymbolMap *symbolsSMP;
 
-  void paintEvent(QPaintEvent*);
   void modifySystemState(unsigned);
-  void updateConsole();
   void echo(const char *message, const char *color = "");
   void event();
   void autoUpdate();
@@ -98,7 +83,6 @@ public slots:
 private:
   inline void switchWindow();
 
-  std::list<LogMessage> messageBuffer;
   unsigned frameCounter;
 };
 
