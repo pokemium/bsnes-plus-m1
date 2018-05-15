@@ -1,5 +1,3 @@
-// TODO: Based on some #define, create either QPlainTextEdit or QWebEngineView for the console
-
 #include <list>
 
 struct LogMessage {
@@ -24,6 +22,10 @@ public:
   void echo(const char *message, const char *color = "");
 
 private:
-  QWebEngineView *webview;
+#if defined(USE_WEBENGINE)
+  QWebEngineView *console;
+#else
+  QPlainTextEdit *console;
+#endif
   std::list<LogMessage> messageBuffer;
 };

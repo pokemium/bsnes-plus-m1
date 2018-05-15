@@ -31,6 +31,11 @@ endif
 # comment this line to enable asserts
 flags += -DNDEBUG
 
+# use QWebEngine console
+ifeq ($(use_webengine),true)
+flags += -DUSE_WEBENGINE
+endif
+
 # profile-guided instrumentation
 # flags += -fprofile-generate
 # link += -lgcov

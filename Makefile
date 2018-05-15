@@ -5,12 +5,12 @@ include bsnes/nall/Makefile
 default: bsnes
 
 bsnes:
-	@$(MAKE) -C bsnes -j4 deploy
+	@$(MAKE) -C bsnes -j4 use_webengine=true deploy
 
 all: clean
-	@$(MAKE) -C bsnes -j4 deploy
+	@$(MAKE) -C bsnes -j4 use_webengine=true deploy
 	@$(MAKE) clean -C bsnes
-	@$(MAKE) -C bsnes -j4 deploy profile=accuracy
+	@$(MAKE) -C bsnes -j4 use_webengine=true profile=accuracy deploy
 	@$(MAKE) clean -C bsnes
 
 dist:

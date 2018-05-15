@@ -4,9 +4,10 @@
 
 #include <QApplication>
 #include <QtWidgets>
+
+#if defined(USE_WEBENGINE)
 #include <QWebEngineView>
-//Q_IMPORT_PLUGIN(QJpegPlugin)
-//Q_IMPORT_PLUGIN(QMngPlugin)
+#endif
 
 #include <snes.hpp>
 

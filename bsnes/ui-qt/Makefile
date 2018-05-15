@@ -1,4 +1,9 @@
-qtlibs := $(strip QtCore QtGui QtWidgets QtWebEngineCore QtWebEngine QtWebEngineWidgets $(if $(findstring osx,$(platform)),QtOpenGL))
+qtlibs := $(strip QtCore QtGui QtWidgets $(if $(findstring osx,$(platform)),QtOpenGL))
+
+ifeq ($(use_webengine),true)
+qtlibs += $(strip QtWebEngineCore QtWebEngine QtWebEngineWidgets)
+endif
+
 include $(ui)/template/Makefile
 
 ui_objects := ui-main ui-base ui-cartridge ui-debugger ui-input ui-movie ui-settings ui-state ui-tools

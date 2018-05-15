@@ -1,5 +1,6 @@
 #include "logview.moc"
 
+#if defined(USE_WEBENGINE)
 const char logViewHtmlContent[] =
   "<html>"
   "<head>"
@@ -21,29 +22,59 @@ const char logViewHtmlContent[] =
   "</head>"
   "<body></body>"
   "</html>";
+#endif
 
 LogView::LogView(QWidget *parent) : QWidget(parent) {
-  webview = new QWebEngineView;
-  webview->setHtml(QString(logViewHtmlContent));
+#if defined(USE_WEBENGINE)
+  console = new QWebEngineView;
+  console->setHtml(QString(logViewHtmlContent));
+#else
+  console = new QPlainTextEdit;
+  console->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  console->setReadOnly(true);
+  console->setUndoRedoEnabled(false);
+  console->setFont(QFont(Style::Monospace, Style::MonospaceSize));
+  console->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  console->setMinimumWidth((98 + 4) * console->fontMetrics().width(' '));
+  console->setMinimumHeight((25 + 1) * console->fontMetrics().height());
+#endif
 
   QVBoxLayout *layout = new QVBoxLayout;
-  layout->addWidget(webview);
+  layout->addWidget(console);
   setLayout(layout);
 }
 
 void LogView::update() {
+#if defined(USE_WEBENGINE)
   if (messageBuffer.size()) {
     for (LogMessage &m : messageBuffer) {
-      webview->page()->runJavaScript(string() << "putp('" << m.message << "', '" << m.color << "')");
+      console->page()->runJavaScript(string() << "putp('" << m.message << "', '" << m.color << "')");
     }
-    webview->page()->runJavaScript("pgend()");
+    console->page()->runJavaScript("pgend()");
     messageBuffer.clear();
   }
+#else
+  if (messageBuffer.size()) {
+    QTextCursor cursor = QTextCursor(console->document());
+    cursor.movePosition(QTextCursor::End);
+    for (LogMessage &m : messageBuffer) {
+      string s = m.message;
+      s.replace(" ", "&nbsp;");
+      cursor.insertHtml(string() << "<font color='" << m.color << "'>" << s << "</font><br>");
+    }
+    messageBuffer.clear();
+  }
+#endif
 }
+
 
 void LogView::clear() {
   messageBuffer.clear();
-  webview->page()->runJavaScript("pgclr()");
+#if defined(USE_WEBENGINE)
+  console->page()->runJavaScript("pgclr()");
+#else
+  console->clear();
+#endif
 }
 
 void LogView::echo(const char *message, const char *color) {
