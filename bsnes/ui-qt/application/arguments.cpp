@@ -118,7 +118,7 @@ void Application::printArguments() {
        "followed by the (optional) slot cartridge(s).");
   #if defined(DEBUGGER)
   puts("\n"
-  puts("  --show-debugger                   open debugger window on startup\n"
+       "  --show-debugger                   open debugger window on startup\n"
        "  --break-immediately               break when loading the cartridge\n"
        "  --break-on-wdm                    break on WDM opcode\n"
        "  --break-on-brk                    break on BRK opcode\n"

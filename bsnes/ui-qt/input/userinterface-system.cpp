@@ -103,7 +103,6 @@ struct FrameAdvance : HotkeyInput {
   }
 
   FrameAdvance() : HotkeyInput("Frame Advance", "input.userInterface.system.frameAdvance") {
-    name = "KB0::Backslash";
     userInterfaceSystem.attach(this);
   }
 } frameAdvance;
