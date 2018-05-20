@@ -129,7 +129,7 @@ Debugger::Debugger() {
 
   QWidget *consolePaneWidget = new QWidget;
   QHBoxLayout *consolePane = new QHBoxLayout;
-  consolePane->setMargin(0);
+  consolePane->setMargin(Style::WindowMargin);
   consolePane->setSpacing(Style::TightWidgetSpacing);
   consolePaneWidget->setLayout(consolePane);
   console = new LogView();
@@ -137,6 +137,7 @@ Debugger::Debugger() {
 
   QWidget *consoleExtrasWidget = new QWidget;
   QVBoxLayout *consoleExtras = new QVBoxLayout;
+  consoleExtras->setMargin(0);
   consoleExtras->setSpacing(Style::TightWidgetSpacing);
   consoleExtrasWidget->setLayout(consoleExtras);
   consolePane->addWidget(consoleExtrasWidget);

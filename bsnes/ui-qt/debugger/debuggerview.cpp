@@ -7,7 +7,11 @@ DebuggerView::DebuggerView(RegisterEdit *registers, DisasmProcessor *processor, 
   cursorPosition = 0;
 
   layout = new QHBoxLayout;
+  #if defined(PLATFORM_OSX)
+  layout->setMargin(2);
+  #else
   layout->setMargin(Style::WindowMargin);
+  #endif
   layout->setSpacing(Style::TightWidgetSpacing);
   setLayout(layout);
 

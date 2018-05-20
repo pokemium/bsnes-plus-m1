@@ -40,6 +40,8 @@ LogView::LogView(QWidget *parent) : QWidget(parent) {
 #endif
 
   QVBoxLayout *layout = new QVBoxLayout;
+  layout->setMargin(0);
+  layout->setSpacing(Style::TightWidgetSpacing);
   layout->addWidget(console);
   setLayout(layout);
 }
