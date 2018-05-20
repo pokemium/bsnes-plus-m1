@@ -28,6 +28,7 @@ public:
   bool terminate;  //set to true to terminate main() loop and exit emulator
   bool power;
   bool pause;
+  bool frameAdvance;
   bool autopause;
   bool debug;      //debugger sets this to true when entered to suspend emulation
   bool debugrun;   //debugger sets this to true to run emulation to a debug event
@@ -41,11 +42,14 @@ public:
   string cheatsFilename;
   string currentRom;
 
+  SNES::Cartridge::Mode loadType; // used for command-line loading
+
   array<QWidget*> windowList;
 
   int main(int &argc, char **argv);
   bool singleUserMode();
   void locateFile(string &filename, bool createDataDirectory = false);
+  void loadCartridge(const string& filename); // used for command-line loading
   void initPaths(const char *basename);
   void init();
 

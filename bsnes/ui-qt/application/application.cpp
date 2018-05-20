@@ -68,6 +68,40 @@ void Application::locateFile(string &filename, bool createDataDirectory) {
   filename = temp;
 }
 
+void Application::loadCartridge(const string &filename) {
+    if(striend(filename, ".bs")) {
+      if(config().path.bsx == "") {
+        loaderWindow->loadBsxCartridge("", filename);
+      } else {
+        cartridge.loadBsx(config().path.bsx, filename);
+      }
+      
+    } else if(striend(filename, ".st")) { 
+      if(config().path.st == "") {
+        loaderWindow->loadSufamiTurboCartridge("", filename, "");
+      } else {
+        cartridge.loadSufamiTurbo(config().path.st, filename, "");
+      }
+      
+    } else if(striend(filename, ".gb") || striend(filename, ".sgb") || striend(filename, ".gbc")) {
+      if(config().path.sgb == "") {
+        loaderWindow->loadSuperGameBoyCartridge("", filename);
+      } else {
+        cartridge.loadSuperGameBoy(config().path.sgb, filename);
+      }
+      
+    } else if(striend(filename, ".spc")) {
+      cartridge.loadSpc(filename);
+      
+    } else if(striend(filename, ".snsf") || striend(filename, ".minisnsf"))  {
+      cartridge.loadSnsf(filename);
+      
+    } else {
+      cartridge.loadNormal(filename);
+      
+    }
+}
+
 int Application::main(int &argc, char **argv) {
   app = new App(argc, argv);
   #if !defined(PLATFORM_WIN)
@@ -154,8 +188,15 @@ void Application::run() {
       SNES::debugger.break_event = SNES::Debugger::BreakEvent::None;
     }
     #endif
+    if(frameAdvance && SNES::scheduler.exit_reason() == SNES::Scheduler::ExitReason::FrameEvent) {
+      pause = true;
+    }
   } else {
     usleep(20 * 1000);
+    if (frameAdvance) {
+      audio.clear();
+      frameAdvance = false;
+    }
   }
 
   clock_t currentTime = clock();
@@ -177,16 +218,19 @@ void Application::run() {
 }
 
 Application::Application() : timer(0) {
-  terminate = false;
-  power     = false;
-  pause     = false;
-  autopause = false;
-  debug     = false;
-  debugrun  = false;
+  terminate    = false;
+  power        = false;
+  frameAdvance = false;
+  pause        = false;
+  autopause    = false;
+  debug        = false;
+  debugrun     = false;
 
   clockTime       = clock();
   autosaveTime    = 0;
   screensaverTime = 0;
+  
+  loadType = SNES::Cartridge::Mode::Normal;
 }
 
 Application::~Application() {
