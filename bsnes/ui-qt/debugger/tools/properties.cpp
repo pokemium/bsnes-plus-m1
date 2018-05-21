@@ -22,6 +22,8 @@ PropertiesWidget::PropertiesWidget(SNES::ChipDebugger &object) : object(object) 
   setMinimumSize(480, 240);
 
   layout = new QVBoxLayout;
+  layout->setMargin(Style::TightWidgetSpacing);
+  layout->setSpacing(Style::TightWidgetSpacing);
   setLayout(layout);
 
   list = new QTreeWidget;
