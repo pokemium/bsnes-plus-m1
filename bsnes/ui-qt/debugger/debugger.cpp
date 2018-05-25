@@ -49,11 +49,11 @@ Debugger::Debugger() {
   setWindowTitle("Debugger");
   setGeometryString(&config().geometry.debugger);
   application.windowList.append(this);
-
+puts("IN");
   tracer = new Tracer;
   breakpointEditor = new BreakpointEditor;
   propertiesViewer = new PropertiesViewer;
-  vramViewer = new VramViewer;
+  //vramViewer = new VramViewer;
   tileViewer = new TileViewer;
   tilemapViewer = new TilemapViewer;
   oamViewer = new OamViewer;
@@ -159,8 +159,6 @@ Debugger::Debugger() {
   stepOut->defaultAction()->setShortcut(Qt::Key_F8);
   toolBar->addWidget(stepOut);
 
-
-
   connect(menu_tools_breakpoint, SIGNAL(triggered()), breakpointEditor, SLOT(show()));
   connect(menu_tools_memory, SIGNAL(triggered()), this, SLOT(createMemoryEditor()));
   connect(menu_tools_propertiesViewer, SIGNAL(triggered()), propertiesViewer, SLOT(show()));
@@ -189,7 +187,7 @@ Debugger::Debugger() {
   connect(debugSMP, SIGNAL(traceStateChanged(int)), tracer, SLOT(setSmpTraceState(int)));
   connect(debugSA1, SIGNAL(traceStateChanged(int)), tracer, SLOT(setSa1TraceState(int)));
   connect(debugSFX, SIGNAL(traceStateChanged(int)), tracer, SLOT(setSfxTraceState(int)));
-  connect(traceMask->defaultAction(), SIGNAL(toggled(bool)), tracer, SLOT(setTraceMaskState(bool)));
+  //connect(traceMask->defaultAction(), SIGNAL(toggled(bool)), tracer, SLOT(setTraceMaskState(bool)));
 
   frameCounter = 0;
   synchronize();
