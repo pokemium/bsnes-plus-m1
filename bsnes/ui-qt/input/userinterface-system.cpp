@@ -54,6 +54,19 @@ struct LoadSuperGameBoyCartridge : HotkeyInput {
   }
 } loadSuperGameBoyCartridge;
 
+struct PowerToggle : HotkeyInput {
+  void pressed() {
+    if (application.power)
+	  utility.modifySystemState(Utility::PowerOff);	
+	else 
+	  utility.modifySystemState(Utility::PowerOn);
+  }
+
+  PowerToggle() : HotkeyInput("Power On/Off", "input.userInterface.system.powerToggle") {
+    userInterfaceSystem.attach(this);
+  }
+} powerToggle;
+
 struct PowerCycle : HotkeyInput {
   void pressed() {
     utility.modifySystemState(Utility::PowerCycle);
@@ -95,5 +108,17 @@ struct Pause : HotkeyInput {
     userInterfaceSystem.attach(this);
   }
 } pause;
+
+struct FrameAdvance : HotkeyInput {
+  void pressed() {
+    application.pause = false;
+    application.frameAdvance = true;
+  }
+
+  FrameAdvance() : HotkeyInput("Frame Advance", "input.userInterface.system.frameAdvance") {
+    name = "KB0::Backslash";
+    userInterfaceSystem.attach(this);
+  }
+} frameAdvance;
 
 }

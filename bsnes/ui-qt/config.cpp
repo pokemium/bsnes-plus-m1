@@ -92,6 +92,8 @@ Configuration::Configuration() {
   attach(video.cropRight  = 0, "video.cropRight");
   attach(video.cropBottom = 0, "video.cropBottom");
 
+  attach(video.unfilteredScreenshot = true, "video.unfilteredScreenshot");
+
   attach(video.windowed.correctAspectRatio = true, "video.windowed.correctAspectRatio");
   attach(video.windowed.multiplier         =    2, "video.windowed.multiplier");
   attach(video.windowed.region             =    0, "video.windowed.region");
@@ -142,7 +144,7 @@ Configuration::Configuration() {
   attach(geometry.memoryEditor     = "", "geometry.memoryEditor");
   attach(geometry.propertiesViewer = "", "geometry.propertiesViewer");
   attach(geometry.layerToggle      = "", "geometry.layerToggle");
-  attach(geometry.vramViewer       = "", "geometry.vramViewer");
+  attach(geometry.tileViewer       = "", "geometry.tileViewer");
   attach(geometry.tilemapViewer    = "", "geometry.tilemapViewer");
   attach(geometry.oamViewer        = "", "geometry.oamViewer");
   attach(geometry.cgramViewer      = "", "geometry.cgramViewer");

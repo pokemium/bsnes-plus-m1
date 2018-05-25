@@ -57,11 +57,14 @@ using namespace ruby;
   #include "debugger/tools/memory.moc.hpp"
   #include "debugger/tools/properties.moc.hpp"
 
-  #include "debugger/ppu/cgram-widget.moc.hpp"
-  #include "debugger/ppu/image-grid-widget.moc.hpp"
+  #include "debugger/ppu/base-renderer.hpp"
+  #include "debugger/ppu/tile-renderer.hpp"
   #include "debugger/ppu/tilemap-renderer.hpp"
 
-  #include "debugger/ppu/vram-viewer.moc.hpp"
+  #include "debugger/ppu/cgram-widget.moc.hpp"
+  #include "debugger/ppu/image-grid-widget.moc.hpp"
+
+  #include "debugger/ppu/tile-viewer.moc.hpp"
   #include "debugger/ppu/tilemap-viewer.moc.hpp"
   #include "debugger/ppu/oam-viewer.moc.hpp"
   #include "debugger/ppu/cgram-viewer.moc.hpp"
@@ -95,6 +98,7 @@ using namespace ruby;
 #include "tools/cheatfinder.moc.hpp"
 #include "tools/statemanager.moc.hpp"
 #include "tools/effecttoggle.moc.hpp"
+#include "tools/manifestviewer.moc.hpp"
 #include "tools/soundviewer.moc.hpp"
 
 #include "utility/utility.hpp"
