@@ -54,7 +54,7 @@ else ifeq ($(platform),osx)
   osxbundle := $(osxbundle).app
   flags += -mmacosx-version-min=10.9
   link += -mmacosx-version-min=10.9 -headerpad_max_install_names
-else ifeq ($(platform),win)
+else ifeq ($(platform),$(filter $(platform),win msys))
   link += -mwindows
   link += -mthreads -luuid -lkernel32 -luser32 -lgdi32 -lcomctl32 -lcomdlg32 -lshell32 -lole32
   link += -Wl,-enable-stdcall-fixup -Wl,-enable-auto-import -Wl,-enable-runtime-pseudo-reloc

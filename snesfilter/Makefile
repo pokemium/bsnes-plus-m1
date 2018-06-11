@@ -38,7 +38,7 @@ else ifeq ($(platform),osx)
     flags += -fPIC -fopenmp -mmacosx-version-min=10.9
     link += -fopenmp -lpthread -lgomp -mmacosx-version-min=10.9 -headerpad_max_install_names
   endif
-else ifeq ($(platform),win)
+else ifeq ($(platform),$(filter $(platform),win msys))
   flags := -fopenmp $(flags)
   link += -fopenmp -lpthread
 endif
@@ -91,7 +91,7 @@ ifeq ($(platform),x)
 else ifeq ($(platform),osx)
 	ar rcs libsnesfilter.a $(objects)
 	$(cpp) $(link) -o libsnesfilter.dylib -shared -dynamiclib $(objects) $(qtlib)
-else ifeq ($(platform),win)
+else ifeq ($(platform),$(filter $(platform),win msys))
 	$(cpp) $(link) -o snesfilter.dll -shared -Wl,--out-implib,libsnesfilter.a $(objects) $(qtlib)
 endif
 
