@@ -27,8 +27,8 @@ Non-debugging features:
 
 ## Binaries
 
-- Windows binaries are available in devinacker's [upstream repository](https://github.com/devinacker/bsnes-plus/releases)
-- macOS binaries are available [here](https://goo.gl/06Ofmd)
+- Links to Windows binaries are available in devinacker's [upstream repository](https://github.com/devinacker/bsnes-plus/releases)
+- macOS binaries are available [here](http://bit.ly/bsnesplus_mac)
 
 ## Building on Windows
 
