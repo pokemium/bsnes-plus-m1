@@ -1,4 +1,4 @@
-include bsnes/nall/Makefile
+include common/nall/Makefile
 
 .PHONY: all bsnes dist clean
 

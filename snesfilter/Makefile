@@ -1,7 +1,9 @@
-include nall/Makefile
+common := ../common
+nall   := $(common)/nall
+include $(nall)/Makefile
 
 qtlibs := QtCore QtGui QtWidgets
-include nall/qt/Makefile
+include $(nall)/qt/Makefile
 
 ifeq ($(OSX_USE_GCC), 1)
 # openmp is not available with clang, so optionally check if g++ is available.
@@ -15,7 +17,7 @@ endif
 
 c     := $(compiler) -xc -std=gnu99
 cpp   := $(compiler) -std=gnu++11
-flags := -I. -Iobj $(qtinc)
+flags := -I. -I$(common) -Iobj $(qtinc)
 link  :=
 
 ifeq ($(DEBUG), 1)

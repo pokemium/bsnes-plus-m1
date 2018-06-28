@@ -1,4 +1,6 @@
-include nall/Makefile
+common := ../common
+nall   := $(common)/nall
+include $(nall)/Makefile
 snes := snes
 ifeq ($(profile),)
   profile := compatibility
@@ -8,12 +10,12 @@ ifeq ($(ui),)
 endif
 
 # build version
-version := v073+3a
+version := v04
 
 # compiler
 c       := $(compiler) -xc -std=gnu99
 cpp     := $(compiler) -std=gnu++11
-flags   := -I. -I$(snes)
+flags   := -I. -I$(common) -I$(snes)
 link    :=
 objects :=
 deployqt_flags :=
@@ -85,9 +87,11 @@ deploy: all
 include $(snes)/Makefile
 include $(ui)/Makefile
 
-# including CoreFoundation in nall/string/platform.hpp polluted the global namespace
+#s including CoreFoundation in $(nall)/string/platform.hpp polluted the global namespace
+ifeq ($(platform),osx)
 objects += nall-string-platform
-obj/nall-string-platform.o: nall/string/platform.cpp
+obj/nall-string-platform.o: $(nall)/string/platform.cpp
+endif
 
 objects := $(patsubst %,obj/%.o,$(objects))
 
@@ -165,6 +169,6 @@ plugins_clean:
 	@$(MAKE) clean -C ../supergameboy
 
 archive-all:
-	tar -cjf bsnes.tar.bz2 data launcher libco nall obj out phoenix ruby snes ui-phoenix ui-qt Makefile cc.bat clean.bat sync.sh
+	tar -cjf bsnes.tar.bz2 data launcher libco obj out ruby snes ui-qt Makefile cc.bat clean.bat sync.sh uname.bat
 
 help:;

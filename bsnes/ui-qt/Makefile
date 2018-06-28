@@ -4,7 +4,7 @@ ifeq ($(use_webengine),true)
 qtlibs += $(strip QtWebEngineCore QtWebEngine QtWebEngineWidgets)
 endif
 
-include $(ui)/template/Makefile
+include $(nall)/qt/Makefile
 
 ui_objects := ui-main ui-base ui-cartridge ui-debugger ui-input ui-movie ui-settings ui-state ui-tools
 ui_objects += ruby
@@ -12,7 +12,7 @@ ui_objects += $(if $(call streq,$(platform),$(filter $(platform),win msys)),reso
 link += $(qtlib)
 
 headers := $(call rwildcard,$(ui)/,%.hpp)
-moc_headers := $(call rwildcard,nall/qt/,%.moc.hpp) $(call rwildcard,$(ui)/,%.moc.hpp)
+moc_headers := $(call rwildcard,$(nall)/qt/,%.moc.hpp) $(call rwildcard,$(ui)/,%.moc.hpp)
 moc_objects := $(foreach f,$(moc_headers),obj/$(notdir $(patsubst %.moc.hpp,%.moc,$f)))
 qt_compile = $(call compile,-Iobj $(qtinc))
 
