@@ -83,6 +83,8 @@ all: build plugins
 deploy: all
 ifeq ($(platform),osx)
 	$(qtpath)/bin/macdeployqt $(osxbundle) $(deployqt_flags)
+else ifeq ($(platform),$(filter $(platform),win msys))
+	$(qtpath:=/bin/)windeployqt --no-translations --compiler-runtime out/
 endif
 	@echo \"deploy\" done
 
