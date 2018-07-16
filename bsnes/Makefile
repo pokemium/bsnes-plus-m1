@@ -81,7 +81,11 @@ all: build plugins
 	@echo \"all\" done
 
 deploy: all
+ifeq ($(platform),osx)
 	$(qtpath)/bin/macdeployqt $(osxbundle) $(deployqt_flags)
+else ifeq ($(platform),$(filter $(platform),win msys))
+	$(qtpath:=/bin/)windeployqt --no-translations --compiler-runtime out/
+endif
 	@echo \"deploy\" done
 
 include $(snes)/Makefile
@@ -146,6 +150,14 @@ ifeq ($(platform),osx)
 	cp -f ../supergameboy/libsupergameboy.dylib $(osxbundle)/Contents/Frameworks/libsupergameboy.dylib
 ifneq ($(profile),accuracy)
 	cp -f ../snesfilter/libsnesfilter.dylib $(osxbundle)/Contents/Frameworks/libsnesfilter.dylib
+endif
+else ifeq ($(platform),$(filter $(platform),win msys))
+	cp -f ../snesreader/snesreader.dll out/
+	cp -f ../snesfilter/snesfilter.dll out/
+	cp -f ../snesmusic/snesmusic.dll out/
+	cp -f ../supergameboy/supergameboy.dll out/
+ifneq ($(profile),accuracy)
+	cp -f ../snesfilter/snesfilter.dll out/
 endif
 endif
 
