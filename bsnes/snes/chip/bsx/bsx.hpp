@@ -1,54 +1,62 @@
 #include <nall/file.hpp>
 
-class BSXBase : public MMIO {
+class BSXBase : public Coprocessor, public MMIO {
 public:
+  static void Enter();
+  void enter();
   void init();
   void enable();
   void power();
   void reset();
+  void unload();
+
+  void serialize(serializer&);
 
   uint8 mmio_read(unsigned addr);
   void mmio_write(unsigned addr, uint8 data);
 
 private:
-  file SAT1;
-  file SAT2;
-
-  void stream1_fileload(uint8 count);
-  void stream2_fileload(uint8 count);
-  uint8 get_time(bool reset);
-
-  bool local_time;
-  time_t custom_time, start_time;
-
+  struct BSXStream {
+    // stream MMIO
+    uint14 channel;  // $2188-2189, $218e-218f
+    uint8 prefix;    // $218b, $2191
+    uint8 data;      // $218c, $2192
+    uint8 prefix_or; // $218d, $2193
+    
+    // broadcast data packet (from bsxdat)
+    file packets;
+    int offset;
+    uint14 loaded_channel;
+    uint8 loaded_count;
+    
+    // internal state
+    bool pf_latch, dt_latch;
+    uint8 count;
+    bool first;
+    uint16 queue; // number of remaining unbuffered packets
+    uint16 pf_queue; // number of buffered prefix bytes
+    uint16 dt_queue; // number of buffered packets
+    
+    // Time Channel data
+    struct tm time;
+  };
+  
   struct {
-    //Stream 1
-    uint8 r2188, r2189, r218b, r218c, r218d;
-
-    //Stream 2
-    uint8 r218e, r218f, r2191, r2192, r2193;
-
+    //Stream 1 & 2
+    BSXStream stream[2];
+    
     //Other
     uint8 r2194, r2195, r2196, r2197;
 
     //Serial
     uint8 r2198, r2199;
-
-    //Time
-    uint8 time_counter;
-    uint8 time_hour, time_minute, time_second;
-    uint8 time_weekday, time_day, time_month;
-    uint8 time_yearL, time_yearH;
-
-    //Internal
-    bool pf_latch1_enable, dt_latch1_enable;
-    bool pf_latch2_enable, dt_latch2_enable;
-
-    bool stream1_loaded, stream2_loaded;
-    uint8 stream1_count, stream2_count;
-    bool stream1_first, stream2_first;
-    uint16 stream1_queue, stream2_queue;
   } regs;
+  
+  bool stream_fileload(BSXStream &stream);
+  uint8 get_time(BSXStream &stream);
+
+  bool local_time;
+  time_t custom_time, start_time;
 };
 
 class BSXCart : public Memory {
@@ -57,6 +65,8 @@ public:
   void enable();
   void power();
   void reset();
+
+  void serialize(serializer&);
 
   uint8 read(unsigned addr);
   void write(unsigned addr, uint8 data);
@@ -67,6 +77,7 @@ public:
 private:
   struct {
     uint8 r[16];
+    uint8 rtemp[16];
     bool dirty;
   } regs;
 
@@ -79,6 +90,8 @@ public:
   void enable();
   void power();
   void reset();
+
+  void serialize(serializer&);
 
   unsigned size() const;
   uint8 read(unsigned addr);

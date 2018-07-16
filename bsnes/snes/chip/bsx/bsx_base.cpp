@@ -2,6 +2,33 @@
 
 BSXBase bsxbase;
 
+void BSXBase::Enter() { bsxbase.enter(); }
+
+void BSXBase::enter() {
+  while(true) {
+    if(scheduler.sync == Scheduler::SynchronizeMode::All) {
+      scheduler.exit(Scheduler::ExitReason::SynchronizeEvent);
+    }
+
+    // buffer a packet for currently open streams
+    for(auto &stream : regs.stream) {
+      if(stream.queue) {
+        stream.queue--;
+        if(stream.pf_latch && stream.pf_queue < 0x80) stream.pf_queue++;
+        if(stream.dt_latch && stream.dt_queue < 0x80) stream.dt_queue++;
+      }
+    }
+
+    // simulate an estimated number of bits to buffer a full packet for two channels:
+    // 30 bit header + 176 bit payload + 82 bit error correction/CRC per frame
+    // right now, act as if there are only ever two total channels in the broadcast,
+    // but in reality, there could be any arbitrary number of channels being
+    // broadcast asynchronously with each other in the same satellite data stream
+    step(288*2);
+    synchronize_cpu();
+  }
+}
+
 void BSXBase::init() {
 }
 
@@ -14,6 +41,8 @@ void BSXBase::power() {
 }
 
 void BSXBase::reset() {
+  create(BSXBase::Enter, 224*1024);
+
   memset(&regs, 0x00, sizeof regs);
   
   local_time = config.sat.local_time;
@@ -25,69 +54,39 @@ void BSXBase::reset() {
   time(&start_time);
 }
 
-void BSXBase::stream1_fileload(uint8 count)
+void BSXBase::unload() {
+  regs.stream[0].packets.close();
+  regs.stream[1].packets.close();
+}
+
+bool BSXBase::stream_fileload(BSXStream &stream)
 {
   //Make sure to close the file first
-  SAT1.close();
+  stream.packets.close();
   char filename[256];
   string filepath;
-  sprintf(filename, "BSX%04X-%d.bin", (regs.r2188 | (regs.r2189 * 256)), count);
+  sprintf(filename, "BSX%04X-%d.bin", stream.channel, stream.count);
   filepath << config.sat.path << filename;
   
   //Open Satellaview file
-  if (SAT1.open(filepath, file::mode::read))
+  if (stream.packets.open(filepath, file::mode::read))
   {
-    regs.stream1_loaded = true;
-    regs.stream1_first = true;
-    float QueueSize = SAT1.size() / 22.;
-    regs.stream1_queue = ceil(QueueSize);
-
-    regs.stream1_first = true;
+    stream.first = true;
+    stream.loaded_channel = stream.channel;
+    stream.loaded_count = stream.count;
+    stream.queue = ceil(stream.packets.size() / 22.);
   }
   else
   {
-    regs.stream1_loaded = false;
-  }
-}
-
-void BSXBase::stream2_fileload(uint8 count)
-{
-  //Make sure to close the file first
-  SAT2.close();
-  char filename[256];
-  string filepath;
-  sprintf(filename, "BSX%04X-%d.bin", (regs.r218e | (regs.r218f * 256)), count);
-  filepath << config.sat.path << filename;
-
-  //Open Satellaview file
-  if (SAT2.open(filepath, file::mode::read))
-  {
-    regs.stream2_loaded = true;
-    regs.stream2_first = true;
-    float QueueSize = SAT1.size() / 22.;
-    regs.stream2_queue = ceil(QueueSize);
-
-    regs.stream2_first = true;
-  }
-  else
-  {
-    regs.stream2_loaded = false;
-  }
-}
-
-uint8 BSXBase::get_time(bool reset)
-{
-  if(reset == true) {
-    regs.time_counter = 0;
-    return 0xff;
+    stream.loaded_channel = 0;
   }
   
-  unsigned counter = regs.time_counter;
-  regs.time_counter++;
-  if (regs.time_counter >= 22)
-    regs.time_counter = 0;
+  return stream.packets.open();
+}
 
-  if (counter == 0) {
+uint8 BSXBase::get_time(BSXStream &stream)
+{
+  if (stream.offset == 0) {
     time_t rawtime;
     tm *t;
     
@@ -100,18 +99,15 @@ uint8 BSXBase::get_time(bool reset)
       t = gmtime(&rawtime);
     }
 
-    regs.time_hour   = t->tm_hour;
-    regs.time_minute = t->tm_min;
-    regs.time_second = t->tm_sec;
-    regs.time_weekday = (t->tm_wday) + 1;
-    regs.time_day = t->tm_mday;
-    regs.time_month = (t->tm_mon) + 1;
-    uint16 time_year = (t->tm_year) + 1900;
-    regs.time_yearL = time_year & 0xFF;
-    regs.time_yearH = time_year >> 8;
+    // adjust time to BS-X value ranges
+    t->tm_wday++;
+    t->tm_mon++;
+    t->tm_year += 1900;
+    // store time for current stream
+    stream.time = *t;
   }
 
-  switch(counter) {
+  switch(stream.offset) {
     case  0: return 0x00;  //Data Group ID / Repetition
     case  1: return 0x00;  //Data Group Link / Continuity
     case  2: return 0x00;  //Data Group Size (24-bit)
@@ -122,103 +118,92 @@ uint8 BSXBase::get_time(bool reset)
     case  7: return 0x00;  //Offset (24-bit)
     case  8: return 0x00;
     case  9: return 0x00;
-    case 10: return regs.time_second;
-    case 11: return regs.time_minute;
-    case 12: return regs.time_hour;
-    case 13: return regs.time_weekday;
-    case 14: return regs.time_day;
-    case 15: return regs.time_month;
-    case 16: return regs.time_yearL;
-    case 17: return regs.time_yearH;
+    case 10: return stream.time.tm_sec;
+    case 11: return stream.time.tm_min;
+    case 12: return stream.time.tm_hour;
+    case 13: return stream.time.tm_wday;
+    case 14: return stream.time.tm_mday;
+    case 15: return stream.time.tm_mon;
+    case 16: return stream.time.tm_year >> 0;
+    case 17: return stream.time.tm_year >> 8;
     default: return 0x00;
   }
 }
 
 uint8 BSXBase::mmio_read(unsigned addr) {
-  switch(addr) {
-    //Stream 1
-    case 0x2188: return regs.r2188; //Logical Channel 1 + Data Structure
-    case 0x2189: return regs.r2189; //Logical Channel 2
+  if(!Memory::debugger_access())
+    cpu.synchronize_coprocessor();
 
-    case 0x218a: {
+  unsigned streamnum = addr >= 0x218e ? 1 : 0;
+  BSXStream &stream = regs.stream[streamnum];
+
+  switch(addr) {
+    //Stream 1 & 2
+    case 0x2188: 
+    case 0x218e: 
+      return stream.channel >> 0; //Logical Channel 1 + Data Structure
+    case 0x2189: 
+    case 0x218f: 
+      return stream.channel >> 8; //Logical Channel 2
+
+    case 0x218a:
+    case 0x2190: {
       //Prefix Count
-      if (!regs.pf_latch1_enable || !regs.dt_latch1_enable)
+      if (!stream.pf_latch || !stream.dt_latch)
       {
         //Stream Not Enabled
         return 0;
       }
 
-      if (regs.r2188 == 0 && regs.r2189 == 0)
+      if (!stream.pf_queue && !stream.dt_queue && !Memory::debugger_access())
       {
-        //Time Channel, one packet
-        return 0x01;
-      }
-      
-      if(!Memory::debugger_access())
-      {
-        if (regs.stream1_queue <= 0)
+        //Queue is empty
+        stream.offset = 0;
+        if (stream.channel == 0)
         {
-          //Queue is empty
-          regs.stream1_count++;
-          stream1_fileload(regs.stream1_count - 1);
+          //Time Channel, one packet
+          stream.first = true;
+          stream.loaded_channel = 0;
+          stream.queue = 1;
         }
-      
-        if (!regs.stream1_loaded && (regs.stream1_count - 1) > 0)
+        else if (!stream_fileload(stream) && stream.count > 0) 
         {
-          //Not loaded
-          regs.stream1_count = 1;
-          stream1_fileload(regs.stream1_count - 1);
+          stream.count = 0;
+          stream_fileload(stream);
         }
+        stream.count++;
       }
       
-      if (regs.stream1_loaded)
-      {
-        //Lock max value at 0x7F for bigger packets
-        if (regs.stream1_queue >= 128)
-          return 0x7F;
-        else
-          return regs.stream1_queue;
-      }
-      else
-      {
-        return 0;
-      }
+      return stream.pf_queue;
     }
-    case 0x218b: {
+    
+    case 0x218b:
+    case 0x2191: {
       //Prefix Data Latch
-      if (regs.pf_latch1_enable)
+      if (stream.pf_latch)
       {
         //Latch enabled
-        if (regs.r2188 == 0 && regs.r2189 == 0)
+        if(stream.pf_queue && !Memory::debugger_access())
         {
-          //Time Channel, only one packet, both start and end
-          regs.r218b = 0x90;
-        }
-
-        if(!Memory::debugger_access())
-        {
-          if (regs.stream1_loaded)
+          stream.prefix = 0;
+          if (stream.first)
           {
-            uint8 temp = 0;
-            if (regs.stream1_first)
-            {
-              //First packet
-              temp |= 0x10;
-              regs.stream1_first = false;
-            }
+            //First packet
+            stream.prefix |= 0x10;
+            stream.first = false;
+          }
 
-            regs.stream1_queue--;
-            if (regs.stream1_queue == 0)
-            {
-              //Last packet
-              temp |= 0x80;
-            }
-            regs.r218b = temp;
+          stream.pf_queue--;
+          if (stream.queue == 0 && stream.pf_queue == 0)
+          {
+            //Last packet
+            stream.prefix |= 0x80;
           }
         }
 
-        regs.r218d |= regs.r218b;
-        return regs.r218b;
+        if(!Memory::debugger_access())
+          stream.prefix_or |= stream.prefix;
+        return stream.prefix;
       }
       else
       {
@@ -226,165 +211,52 @@ uint8 BSXBase::mmio_read(unsigned addr) {
         return 0;
       }
     }
-    case 0x218c: {
+    
+    case 0x218c:
+    case 0x2192: {
       //Data Latch
-      if (regs.dt_latch1_enable)
+      if (stream.dt_latch)
       {
-        if(!Memory::debugger_access())
+        if(stream.dt_queue && !Memory::debugger_access())
         {
-          if (regs.r2188 == 0 && regs.r2189 == 0)
+          if (stream.channel == 0)
           {
             //Return Time
-            regs.r218c = get_time(false);
+            stream.data = get_time(stream);
           }
-          else if (regs.stream1_loaded)
+          else if (stream.packets.open())
           {
             //Get packet data
-            regs.r218c = SAT1.read();
+            stream.data = stream.packets.read();
+          }
+
+          stream.offset++;
+          if(stream.offset % 22 == 0)
+          {
+            //finished reading current packet
+            stream.dt_queue--;
           }
         }
-        return regs.r218c;
+        
+        return stream.data;
       }
       else
       {
         return 0;
       }
     }
-    case 0x218d: {
+    
+    case 0x218d:
+    case 0x2193: {
       //Prefix Data OR Gate
-      uint8 temp = regs.r218d;
-      if(!Memory::debugger_access())
+      uint8 temp = stream.prefix_or;
+      if((regs.r2194 & 1) && !Memory::debugger_access())
       {
-        regs.r218d = 0;
+        stream.prefix_or = 0;
       }
       return temp; 
     }
-
-    //Stream 2
-    case 0x218e: return regs.r218e; //Logical Channel 1 + Data Structure
-    case 0x218f: return regs.r218f; //Logical Channel 2
-
-    case 0x2190: {
-      //Prefix Data Count
-      if (!regs.pf_latch2_enable || !regs.dt_latch2_enable)
-      {
-        return 0;
-      }
-
-      if (regs.r218e == 0 && regs.r218f == 0)
-      {
-        //Time Channel, one packet
-        return 0x01;
-      }
-      
-      if(!Memory::debugger_access())
-      {
-        if (regs.stream2_queue <= 0)
-        {
-          //Queue is empty
-          regs.stream2_count++;
-          stream2_fileload(regs.stream2_count - 1);
-        }
-      
-        if (!regs.stream2_loaded && (regs.stream2_count - 1) > 0)
-        {
-          //Not loaded
-          regs.stream2_count = 1;
-          stream2_fileload(regs.stream2_count - 1);
-        }
-      }
-      
-      if (regs.stream2_loaded)
-      {
-        if (regs.stream2_queue >= 128)
-          return 0x7F;
-        else
-          return regs.stream2_queue;
-      }
-      else
-      {
-        return 0;
-      }
-    }
-    case 0x2191: {
-      //Prefix Data Latch
-      if (regs.pf_latch2_enable)
-      {
-        //Latch enabled
-        if (regs.r218e == 0 && regs.r218f == 0)
-        {
-          //Time Channel, only one packet, both start and end
-          regs.r2191 = 0x90;
-        }
-
-        if(!Memory::debugger_access())
-        {
-          if (regs.stream2_loaded)
-          {
-            uint8 temp = 0;
-            if (regs.stream2_first)
-            {
-              //First packet
-              temp |= 0x10;
-              regs.stream2_first = false;
-            }
-
-            regs.stream2_queue--;
-            if (regs.stream2_queue == 0)
-            {
-              //Last packet
-              temp |= 0x80;
-            }
-            regs.r2191 = temp;
-          }
-        }
-
-        regs.r2193 |= regs.r2191;
-        return regs.r2191;
-      }
-      else
-      {
-        //Latch not enabled
-        return 0;
-      }
-    }
-
-    case 0x2192: {
-      //Data Latch
-      if (regs.dt_latch2_enable)
-      {
-        if(!Memory::debugger_access())
-        {
-          if (regs.r218e == 0 && regs.r218f == 0)
-          {
-            //Return Time
-            regs.r2192 = get_time(false);
-          }
-          else if (regs.stream2_loaded)
-          {
-            //Get packet data
-            regs.r2192 = SAT1.read();
-          }
-        }
-
-        return regs.r2192;
-      }
-      else
-      {
-        return 0;
-      }
-    }
-
-    case 0x2193: {
-      //Prefix Data OR
-      uint8 temp = regs.r2193;
-      if(!Memory::debugger_access())
-      {
-        regs.r2193 = 0;
-      }
-      return temp;
-    }
-
+    
     //Other
     case 0x2194: return regs.r2194; //Satellaview LED and Stream register
     case 0x2195: return regs.r2195; //Unknown
@@ -398,66 +270,40 @@ uint8 BSXBase::mmio_read(unsigned addr) {
 }
 
 void BSXBase::mmio_write(unsigned addr, uint8 data) {
+  if(!Memory::debugger_access())
+    cpu.synchronize_coprocessor();
+
+  unsigned streamnum = addr >= 0x218e ? 1 : 0;
+  BSXStream &stream = regs.stream[streamnum];
+
   switch(addr) {
-    //Stream 1
-    case 0x2188: {
-      //Logical Channel 1 + Data Structure
-      if (regs.r2188 != data)
-        regs.stream1_count = 0;
-      regs.r2188 = data;
-    } break;
-
-    case 0x2189: {
-      //Logical Channel 2 (6bit)
-      if (regs.r2189 != (data & 0x3F))
-        regs.stream1_count = 0;
-      regs.r2189 = data & 0x3F;
-    } break;
-
-    case 0x218b: {
-      //Prefix Data Latch
-      regs.pf_latch1_enable = (data != 0);
-    } break;
-
-    case 0x218c: {
-      //Data Latch
-      if (regs.r2188 == 0 && regs.r2189 == 0 && !Memory::debugger_access())
-      {
-        //Hardcoded Time Channel
-        get_time(true);
-      }
-      regs.dt_latch1_enable = (data != 0);
-    } break;
-
-
-    //Stream 2
+    //Stream 1 & 2
+    case 0x2188:
     case 0x218e: {
       //Logical Channel 1 + Data Structure
-      if (regs.r218e != data)
-        regs.stream2_count = 0;
-      regs.r218e = data;
+      if ((stream.channel & 0xff) != data)
+        stream.count = 0;
+      stream.channel = (stream.channel & 0x3f00) | data;
     } break;
 
+    case 0x2189:
     case 0x218f: {
       //Logical Channel 2 (6bit)
-      if (regs.r218f != (data & 0x3F))
-        regs.stream2_count = 0;
-      regs.r218f = data & 0x3F;
+      if ((stream.channel >> 8) != (data & 0x3F))
+        stream.count = 0;
+      stream.channel = (stream.channel & 0xff) | (data << 8);
     } break;
 
+    case 0x218b:
     case 0x2191: {
       //Prefix Data Latch
-      regs.pf_latch2_enable = (data != 0);
+      stream.pf_latch = (data != 0);
     } break;
 
+    case 0x218c:
     case 0x2192: {
       //Data Latch
-      if (regs.r218e == 0 && regs.r218f == 0 && !Memory::debugger_access())
-      {
-        //Hardcoded Time Channel
-        get_time(true);
-      }
-      regs.dt_latch2_enable = (data != 0);
+      stream.dt_latch = (data != 0);
     } break;
 
 
