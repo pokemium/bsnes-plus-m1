@@ -201,12 +201,12 @@ bool SA1Debugger::property(unsigned id, string &name, string &value) {
   
   item("$2229", "");
   for (unsigned i = 0; i < 8; i++) {
-    item(string("S-CPU IRAM Write Protect 0x", hex<4>(0x3000 + (i<<8))), (bool)((mmio.siwp>>i) & 1));
+    item(string("S-CPU IRAM Write Enable 0x", hex<4>(0x3000 + (i<<8))), (bool)((mmio.siwp>>i) & 1));
   }
   
   item("$222a", "");
   for (unsigned i = 0; i < 8; i++) {
-    item(string("SA-1 IRAM Write Protect 0x", hex<4>(0x3000 + (i<<8))), (bool)((mmio.ciwp>>i) & 1));
+    item(string("SA-1 IRAM Write Enable 0x", hex<4>(0x3000 + (i<<8))), (bool)((mmio.ciwp>>i) & 1));
   }
   
   // $2230-2231
