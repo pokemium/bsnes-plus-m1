@@ -15,7 +15,9 @@ public:
   QAction *menu_ppu_cgramViewer;
   QMenu *menu_misc;
   QAction *menu_misc_clear;
-  QAction *menu_misc_options;
+  QAction *menu_misc_cacheUsage;
+  QAction *menu_misc_saveBreakpoints;
+  QAction *menu_misc_showHClocks;
 
   QVBoxLayout *layout;
   QSplitter *mainLayout;
@@ -62,7 +64,6 @@ public:
     TilemapWindow,
     OAMWindow,
     CGRAMWindow,
-    OptionsWindow,
     ClearConsole
   } MenuAction_t;
 

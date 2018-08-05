@@ -184,7 +184,6 @@ public slots:
   void showLicense();
   void showAbout();
   void hideCursor();
-  void debuggerMenuAction(QAction*);
 };
 
 extern MainWindow *mainWindow;

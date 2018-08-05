@@ -41,8 +41,6 @@ Debugger *debugger;
 #include "ppu/oam-viewer.cpp"
 #include "ppu/cgram-viewer.cpp"
 
-#include "misc/debugger-options.cpp"
-
 Debugger::Debugger() {
   setObjectName("debugger");
   setWindowTitle("Debugger");
@@ -56,7 +54,6 @@ Debugger::Debugger() {
   tilemapViewer = new TilemapViewer;
   oamViewer = new OamViewer;
   cgramViewer = new CgramViewer;
-  debuggerOptions = new DebuggerOptions;
 
   graphs = new Graphs;
   measurements = new Measurements;
@@ -71,29 +68,69 @@ Debugger::Debugger() {
   layout->setSpacing(Style::WidgetSpacing);
   setLayout(layout);
 
-  menu = new QMenuBar;
-  #if !defined(PLATFORM_OSX)
-  layout->setMenuBar(menu);
-  #endif
-
   debugPort.setup();
 
+  #if !defined(PLATFORM_OSX)
+  menu = new QMenuBar;
+  layout->setMenuBar(menu);
+  #else
+  menu = mainWindow->menuBar;
+  #endif
+
+  // Tools menu
+  #if !defined(PLATFORM_OSX)
   menu_tools = menu->addMenu("Tools");
-  menu_tools_breakpoint = menu_tools->addAction("Breakpoint Editor ...");
-  menu_tools_memory = menu_tools->addAction("Memory Editor ...");
-  menu_tools_propertiesViewer = menu_tools->addAction("Properties Viewer ...");
-  menu_tools_measurements = menu_tools->addAction("Config measurements ...");
+  #else
+  menu_tools = mainWindow->debugger_menu;
+  menu_tools->addSeparator();
+  #endif
 
+  menu_tools_memory = menu_tools->addAction("New Memory Editor");
+  menu_tools_breakpoint = menu_tools->addAction("Show Breakpoint Editor");
+  menu_tools_propertiesViewer = menu_tools->addAction("Show System Properties");
+  menu_tools_measurements = menu_tools->addAction("Show Measurements");
+
+  // PPU menu
+  #if !defined(PLATFORM_OSX)
   menu_ppu = menu->addMenu("S-PPU");
-  menu_ppu_tileViewer = menu_ppu->addAction("Tile Viewer ...");
-  menu_ppu_tilemapViewer = menu_ppu->addAction("Tilemap Viewer ...");
-  menu_ppu_oamViewer = menu_ppu->addAction("Sprite Viewer ...");
-  menu_ppu_cgramViewer = menu_ppu->addAction("Palette Viewer ...");
+  #else
+  menu_ppu = mainWindow->debugger_menu;
+  menu_ppu->addSeparator();
+  #endif
 
+  menu_ppu_tileViewer = menu_ppu->addAction("Show Tile Viewer");
+  menu_ppu_tilemapViewer = menu_ppu->addAction("Show Tilemap Viewer");
+  menu_ppu_oamViewer = menu_ppu->addAction("Show Sprite Viewer");
+  menu_ppu_cgramViewer = menu_ppu->addAction("Show Palette Viewer");
+
+  // Misc menu
+  #if !defined(PLATFORM_OSX)
   menu_misc = menu->addMenu("Misc");
-  menu_misc_clear = menu_misc->addAction("Clear Console");
-  menu_misc_options = menu_misc->addAction("Options ...");
+  #else
+  menu_misc = mainWindow->debugger_menu;
+  menu_misc->addSeparator();
+  #endif
 
+  menu_misc_cacheUsage = menu_misc->addAction("Cache Memory Usage Table to Disk");
+  menu_misc_cacheUsage->setCheckable(true);
+  menu_misc_cacheUsage->setChecked(config().debugger.cacheUsageToDisk);
+  menu_misc_saveBreakpoints = menu_misc->addAction("Save Breakpoints");
+  menu_misc_saveBreakpoints->setCheckable(true);
+  menu_misc_saveBreakpoints->setChecked(config().debugger.saveBreakpoints);
+  menu_misc_showHClocks = menu_misc->addAction("Log H-Position in Clocks (Instead of Dots)");
+  menu_misc_showHClocks->setCheckable(true);
+  menu_misc_showHClocks->setChecked(config().debugger.showHClocks);
+  menu_misc->addSeparator();
+  menu_misc_clear = menu_misc->addAction("Clear Console");
+
+  #if defined(PLATFORM_OSX)
+  // Default macOS shortcuts
+  menu_tools_memory->setShortcut(Qt::CTRL | Qt::Key_M);
+  menu_tools_breakpoint->setShortcut(Qt::CTRL | Qt::Key_B);
+  menu_misc_clear->setShortcut(Qt::CTRL | Qt::Key_K);
+  #endif
+
+  // Main layout
   registerEditCPU = new RegisterEditCPU(SNES::cpu);
   registerEditSMP = new RegisterEditSMP;
   registerEditSA1 = new RegisterEditCPU(SNES::sa1);
@@ -108,7 +145,6 @@ Debugger::Debugger() {
   layout->addWidget(mainLayout);
 
   symbolsCPU = new SymbolMap();
-  //symbolsCPU->loadFromString(DEFAULT_SYMBOL_MAP_CPU);
   symbolsSA1 = new SymbolMap();
   symbolsSMP = new SymbolMap();
   symbolsSMP->loadFromString(DEFAULT_SYMBOL_MAP_SMP);
@@ -221,7 +257,9 @@ Debugger::Debugger() {
   connect(menu_ppu_cgramViewer, SIGNAL(triggered()), cgramViewer, SLOT(show()));
 
   connect(menu_misc_clear, SIGNAL(triggered()), this, SLOT(clear()));
-  connect(menu_misc_options, SIGNAL(triggered()), debuggerOptions, SLOT(show()));
+  connect(menu_misc_cacheUsage, SIGNAL(triggered()), this, SLOT(synchronize()));
+  connect(menu_misc_saveBreakpoints, SIGNAL(triggered()), this, SLOT(synchronize()));
+  connect(menu_misc_showHClocks, SIGNAL(triggered()), this, SLOT(synchronize()));
 
   connect(runBreak->defaultAction(), SIGNAL(triggered()), this, SLOT(toggleRunStatus()));
 
@@ -359,6 +397,10 @@ void Debugger::synchronize() {
   stepOver->setEnabled(stepOtherEnabled);
   stepOut->setEnabled(stepOtherEnabled);
 
+  config().debugger.cacheUsageToDisk = menu_misc_cacheUsage->isChecked();
+  config().debugger.saveBreakpoints = menu_misc_saveBreakpoints->isChecked();
+  config().debugger.showHClocks = menu_misc_showHClocks->isChecked();
+
   // todo: factor in whether or not cartridge actually contains SA1/SuperFX
   SNES::debugger.step_cpu = application.debug && debugCPU->stepProcessor->isChecked();
   SNES::debugger.step_smp = application.debug && debugSMP->stepProcessor->isChecked();
@@ -390,22 +432,6 @@ void Debugger::switchWindow() {
   // give focus to the main window if needed so that emulation can continue
   if(config().input.focusPolicy == Configuration::Input::FocusPolicyPauseEmulation) {
     mainWindow->activateWindow();
-  }
-}
-
-void Debugger::menuAction(MenuAction action) {
-  switch (action) {
-    case BreakpointsWindow:   breakpointEditor->show(); break;
-    case MemoryWindow:        createMemoryEditor(); break;
-    case PropertiesWindow:    propertiesViewer->show(); break;
-    case MeasurementsWindow:  measurementEditor->show(); break;
-    case TileWindow:          tileViewer->show(); break;
-    case TilemapWindow:       tilemapViewer->show(); break;
-    case OAMWindow:           oamViewer->show(); break;
-    case CGRAMWindow:         cgramViewer->show(); break;
-    case OptionsWindow:       debuggerOptions->show(); break;
-    case ClearConsole:        clear(); break;
-    default: break;
   }
 }
 

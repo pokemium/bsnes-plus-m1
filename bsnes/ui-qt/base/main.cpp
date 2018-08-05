@@ -29,7 +29,7 @@ MainWindow::MainWindow() {
 
   system_loadSpecial_superGameBoy = system_loadSpecial->addAction("Load Super &Game Boy Cartridge ...");
 
-  system_saveMemoryPack = system->addAction("Save Memory Pack");
+  system_saveMemoryPack = system->addAction("Save Memory Pack ...");
   system_saveMemoryPack->setVisible(false);
 
   system_reload = system->addAction("Reload");
@@ -190,22 +190,6 @@ MainWindow::MainWindow() {
   debugger_menu = menuBar->addMenu("Debugger");
   debugger_show = debugger_menu->addAction("Show Debugger");
   debugger_show->setShortcut(Qt::CTRL | Qt::Key_D);
-  debugger_menu->addSeparator();
-
-  { QAction *debug_action = debugger_menu->addAction("New Memory Editor"); debug_action->setData(Debugger::MenuAction::MemoryWindow); debug_action->setShortcut(Qt::CTRL | Qt::Key_M); }
-  { QAction *debug_action = debugger_menu->addAction("Show Breakpoint Editor"); debug_action->setData(Debugger::MenuAction::BreakpointsWindow); debug_action->setShortcut(Qt::CTRL | Qt::Key_B); }
-  { QAction *debug_action = debugger_menu->addAction("Show System Properties"); debug_action->setData(Debugger::MenuAction::PropertiesWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Show Measurements"); debug_action->setData(Debugger::MenuAction::MeasurementsWindow); }
-  debugger_menu->addSeparator();
-
-  { QAction *debug_action = debugger_menu->addAction("Show Tile Viewer"); debug_action->setData(Debugger::MenuAction::TileWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Show Tilemap Viewer"); debug_action->setData(Debugger::MenuAction::TilemapWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Show Sprite Viewer"); debug_action->setData(Debugger::MenuAction::OAMWindow); }
-  { QAction *debug_action = debugger_menu->addAction("Show Palette Viewer"); debug_action->setData(Debugger::MenuAction::CGRAMWindow); }
-  debugger_menu->addSeparator();
-
-  { QAction *debug_action = debugger_menu->addAction("Clear Console"); debug_action->setData(Debugger::MenuAction::ClearConsole); debug_action->setShortcut(Qt::CTRL | Qt::Key_K); }
-  { QAction *debug_action = debugger_menu->addAction("Debugger Options"); debug_action->setData(Debugger::MenuAction::OptionsWindow); }
   #endif
 
   help = menuBar->addMenu("&Help");
@@ -221,7 +205,7 @@ MainWindow::MainWindow() {
   help_about->setMenuRole(QAction::AboutRole);
 
   #if defined(PLATFORM_OSX)
-  //default macOS shortcuts
+  // Default macOS shortcuts
   system_load->setShortcuts(QKeySequence::Open);
   system_reload->setShortcut(Qt::CTRL | Qt::Key_R);
   system_unload->setShortcut(Qt::CTRL | Qt::Key_U);
@@ -343,7 +327,7 @@ MainWindow::MainWindow() {
     #if !defined(PLATFORM_OSX)
       connect(tools_debugger, SIGNAL(triggered()), this, SLOT(showDebugger()));
     #else
-      connect(debugger_menu, SIGNAL(triggered(QAction*)), this, SLOT(debuggerMenuAction(QAction*)), Qt::UniqueConnection);
+      connect(debugger_menu, SIGNAL(triggered(QAction*)), this, SLOT(showDebugger()), Qt::UniqueConnection);
     #endif
   #endif
   connect(help_documentation, SIGNAL(triggered()), this, SLOT(showDocumentation()));
@@ -676,17 +660,6 @@ void MainWindow::showDebugger() {
   #endif
 }
 
-void MainWindow::debuggerMenuAction(QAction *action) {
-  #if defined(DEBUGGER)
-  Debugger::MenuAction menu_action = (Debugger::MenuAction)action->data().toInt();
-  if (menu_action == Debugger::MenuAction::MainWindow) {
-    showDebugger();
-  } else {
-    debugger->menuAction(menu_action);
-  }
-  #endif
-}
-
 void MainWindow::showDocumentation()  {
   QFile file(":/documentation.html");
   if(file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -738,7 +711,7 @@ void CanvasObject::dragEnterEvent(QDragEnterEvent *event) {
 void CanvasObject::dropEvent(QDropEvent *event) {
   if(event->mimeData()->hasUrls()) {
     QList<QUrl> list = event->mimeData()->urls();
-    if(list.count() == 1) cartridge.loadNormal(list.at(0).toLocalFile().toUtf8().constData());
+    if(list.count() == 1) application.loadCartridge(list.at(0).toLocalFile().toUtf8().constData());
   }
 }
 

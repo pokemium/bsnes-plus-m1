@@ -28,6 +28,7 @@ Configuration::Configuration() {
 
   sat.local_time = true;
   sat.custom_time = 798653040; // 1995-04-23 16:04
+  sat.default_size = 2; // 8 Mbit
 }
 
 #endif

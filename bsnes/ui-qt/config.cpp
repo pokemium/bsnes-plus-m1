@@ -37,6 +37,7 @@ Configuration::Configuration() {
 
   attach(SNES::config.sat.local_time = true, "bsx.localTime");
   attach((signed&)(SNES::config.sat.custom_time = 798653040) /* 1995-04-23 16:04 */, "bsx.customTime");
+  attach((unsigned&)(SNES::config.sat.default_size = 2) /* 8 Mbit */, "bsx.defaultSize", "Default Memory Pack size, 0..4 = 2..32 Mbit");
 
   //TODO: add superfx frequency
 
@@ -75,6 +76,7 @@ Configuration::Configuration() {
   attach(path.current.movie     = "", "path.current.movie");
   attach(path.current.shader    = "", "path.current.shader");
   attach(path.current.cartridge = "", "path.current.cartridge");
+  attach(path.current.exportVRAM = "", "path.current.exportVRAM");
   attach(path.current.filter    = 0,  "path.current.filter");
 
   video.context = &video.windowed;
@@ -142,6 +144,7 @@ Configuration::Configuration() {
   attach(geometry.settingsWindow    = "", "geometry.settingsWindow");
   attach(geometry.toolsWindow       = "", "geometry.toolsWindow");
   attach(geometry.cheatImportWindow = "", "geometry.cheatImportWindow");
+  attach(geometry.soundViewerWindow = "", "geometry.soundViewerWindow");
 
   attach(geometry.debugger         = "", "geometry.debugger");
   attach(geometry.disassembler     = "", "geometry.disassembler");
@@ -153,5 +156,4 @@ Configuration::Configuration() {
   attach(geometry.tilemapViewer    = "", "geometry.tilemapViewer");
   attach(geometry.oamViewer        = "", "geometry.oamViewer");
   attach(geometry.cgramViewer      = "", "geometry.cgramViewer");
-  attach(geometry.debuggerOptions  = "", "geometry.debuggerOptions");
 }

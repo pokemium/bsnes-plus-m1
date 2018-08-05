@@ -87,9 +87,9 @@ void Utility::modifySystemState(system_state_t systemState) {
 
     case ReloadCartridge: {
       if(application.currentRom != "") {
-        cartridge.loadNormal(application.currentRom);
+        application.reloadCartridge();
         showMessage(string() << "Reloaded " << cartridge.name << ".");
-      }
+	  }
     } break;
 
     case Reset: {
