@@ -34,11 +34,11 @@ ifeq ($(platform),x)
   link += -s -fopenmp -lpthread -lgomp
 else ifeq ($(platform),osx)
   ifeq ($(osx_with_gcc),)
-    flags += -fPIC -mmacosx-version-min=10.9
-    link += -lpthread -mmacosx-version-min=10.9 -headerpad_max_install_names
+    flags += -fPIC -mmacosx-version-min=10.13
+    link += -lpthread -mmacosx-version-min=10.13 -headerpad_max_install_names
   else
-    flags += -fPIC -fopenmp -mmacosx-version-min=10.9
-    link += -fopenmp -lpthread -lgomp -mmacosx-version-min=10.9 -headerpad_max_install_names
+    flags += -fPIC -fopenmp -mmacosx-version-min=10.13
+    link += -fopenmp -lpthread -lgomp -mmacosx-version-min=10.13 -headerpad_max_install_names
   endif
 else ifeq ($(platform),$(filter $(platform),win msys))
   flags := -fopenmp $(flags)

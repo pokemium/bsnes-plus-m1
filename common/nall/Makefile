@@ -33,7 +33,7 @@ endif
 
 ifeq ($(compiler),)
   ifeq ($(platform),osx)
-    compiler := clang++
+    compiler := clang++ --target=x86_64-apple-darwin
   else
     compiler := g++
   endif

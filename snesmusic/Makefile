@@ -21,9 +21,9 @@ ifeq ($(platform),x)
   flags := -fPIC $(flags)
   link += -s
 else ifeq ($(platform),osx)
-  flags += -fPIC -mmacosx-version-min=10.9
+  flags += -fPIC -mmacosx-version-min=10.13
   #link += -F/usr/local/lib -mmacosx-version-min=10.10
-  link += -mmacosx-version-min=10.9 -headerpad_max_install_names
+  link += -mmacosx-version-min=10.13 -headerpad_max_install_names
 endif
 
 objects := snesmusic

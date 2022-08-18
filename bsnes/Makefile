@@ -54,8 +54,8 @@ else ifeq ($(platform),osx)
     osxbundle := $(osxbundle)$(profile)
   endif
   osxbundle := $(osxbundle).app
-  flags += -mmacosx-version-min=10.9
-  link += -mmacosx-version-min=10.9 -headerpad_max_install_names
+  flags += -mmacosx-version-min=10.13
+  link += -mmacosx-version-min=10.13 -headerpad_max_install_names
 else ifeq ($(platform),$(filter $(platform),win msys))
   link += -mwindows
   link += -mthreads -luuid -lkernel32 -luser32 -lgdi32 -lcomctl32 -lcomdlg32 -lshell32 -lole32

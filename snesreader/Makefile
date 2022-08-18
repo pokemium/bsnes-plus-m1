@@ -24,8 +24,8 @@ ifeq ($(platform),x)
   flags := -fPIC $(flags)
   link += -s
 else ifeq ($(platform),osx)
-  flags += -fPIC -mmacosx-version-min=10.9
-  link += -lpthread -mmacosx-version-min=10.9 -headerpad_max_install_names
+  flags += -fPIC -mmacosx-version-min=10.13
+  link += -lpthread -mmacosx-version-min=10.13 -headerpad_max_install_names
 endif
 
 objects := snesreader

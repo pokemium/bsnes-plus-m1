@@ -1,4 +1,10 @@
-# bsnes-plus
+# bsnes-plus-m1
+
+```
+  This is a modified makefile of bsnes-plus for m1.
+  I have a successful build with Qt 5.15.2 (Intel).
+    $ qtpath="$HOME/Qt/5.15.2/clang_64" make
+```
 
 bsnes-plus (or bsnes+) is a fork of bsnes (based on bsnes-classic) intended to
 introduce some new features and improvements, mostly aimed at debugging.
